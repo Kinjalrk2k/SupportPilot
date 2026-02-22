@@ -9,6 +9,4 @@ from models.message import Message
 
 from models.functions.updated_at import trigger_set_updated_at
 
-functions = [
-    trigger_set_updated_at
-]
+functions = [trigger_set_updated_at]

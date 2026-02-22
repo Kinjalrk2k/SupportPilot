@@ -6,12 +6,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class GroqLLMService:
     model: BaseChatModel
     agent: Runnable
 
     def __init__(self):
-        self.model = init_chat_model(model="llama-3.1-8b-instant", model_provider="groq")
+        self.model = init_chat_model(
+            model="llama-3.1-8b-instant", model_provider="groq"
+        )
         self.agent = create_agent(model=self.model)
 
     def generate_reply(self, messages: list[AnyMessage]) -> AIMessage:

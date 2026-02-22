@@ -10,5 +10,5 @@ trigger_set_updated_at = PGFunction(
             RETURN NEW;
         END;
         $$ LANGUAGE plpgsql;
-    """
+    """,
 )

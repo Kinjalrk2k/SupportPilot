@@ -12,15 +12,17 @@ engine = create_engine(DATABSE_URL)
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
+
 def get_db_session():
     db = SessionLocal()
     try:
         yield db
-        db.commit()        
+        db.commit()
     except:
-        db.rollback()   
+        db.rollback()
         raise
     finally:
         db.close()
+
 
 SessionDep = Annotated[Session, Depends(get_db_session)]

@@ -7,20 +7,19 @@ from models.base import Base
 from models.mixins.timestamp_mixin import TimestampMixin
 from models.enums.message_role import MessageRole
 
+
 class Message(Base, TimestampMixin):
     __tablename__ = "message"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
 
     conversation_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("conversation.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
 
     role: Mapped[MessageRole] = mapped_column(
@@ -28,13 +27,9 @@ class Message(Base, TimestampMixin):
         nullable=False,
     )
 
-    content: Mapped[str] = mapped_column(
-        Text,
-        nullable=False
-    )
+    content: Mapped[str] = mapped_column(Text, nullable=False)
 
     # back populates
     conversation: Mapped["Conversation"] = relationship(
-        "Conversation",
-        back_populates="messages"
+        "Conversation", back_populates="messages"
     )

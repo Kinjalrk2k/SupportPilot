@@ -30,9 +30,7 @@ target_metadata = Base.metadata
 # ---------------------------
 def render_item(type_, obj, autogen_context):
     if type_ == "type" and isinstance(obj, postgresql.ENUM):
-        autogen_context.imports.add(
-            "from sqlalchemy.dialects import postgresql"
-        )
+        autogen_context.imports.add("from sqlalchemy.dialects import postgresql")
         return (
             "postgresql.ENUM("
             + ", ".join(repr(e) for e in obj.enums)
@@ -63,23 +61,19 @@ def process_revision_directives(context, revision, directives):
             # Only if table has updated_at column
             if any(col.name == "updated_at" for col in op_obj.columns):
 
-                upgrade_ops.ops.append(
-                    ops.ExecuteSQLOp(f"""
+                upgrade_ops.ops.append(ops.ExecuteSQLOp(f"""
                         CREATE TRIGGER {table_name}_set_updated_at
                         BEFORE UPDATE ON public.{table_name}
                         FOR EACH ROW
                         EXECUTE FUNCTION public.trigger_set_updated_at();
-                    """)
-                )
+                    """))
 
                 downgrade_ops.ops.insert(
                     0,
-                    ops.ExecuteSQLOp(
-                        f"""
+                    ops.ExecuteSQLOp(f"""
                         DROP TRIGGER IF EXISTS {table_name}_set_updated_at
                         ON public.{table_name};
-                        """
-                    ),
+                        """),
                 )
 
 

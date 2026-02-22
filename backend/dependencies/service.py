@@ -16,7 +16,6 @@ def get_groq_llm_service() -> GroqLLMService:
 def get_chat_service(
     conversation_repo: ConversationRepository = Depends(get_conversation_repository),
     message_repo: MessageRepository = Depends(get_message_repository),
-    llm: GroqLLMService = Depends(get_groq_llm_service)
+    llm: GroqLLMService = Depends(get_groq_llm_service),
 ) -> ChatService:
     return ChatService(conversation_repo, message_repo, llm)
-
