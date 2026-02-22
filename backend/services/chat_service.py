@@ -11,10 +11,17 @@ from repository.message_repository import MessageRepositoryDep
 from services.groq_llm import GroqLLMServiceDep
 from typing import Annotated
 from fastapi import Depends
+from dataclasses import dataclass
 
 
 class ConversationNotFoundExpection(Exception):
     pass
+
+
+@dataclass(frozen=True)
+class ChatResult:
+    conversation_id: UUID
+    reply: str
 
 
 class ChatService:
@@ -43,6 +50,11 @@ class ChatService:
                     f"Conversation {conversation_id} not found"
                 )
 
+        # create the user message in database
+        self.message_repo.create(
+            conversation_id=conversation.id, role=MessageRole.user, content=message
+        )
+
         # history of messages
         messages = self.message_repo.get_by_conversation_id(conversation_id)
         history = []
@@ -53,15 +65,8 @@ class ChatService:
                 case MessageRole.assistant:
                     history.append(AIMessage(content=m.content))
 
-        history.append(HumanMessage(content=message))
-
         # agent
         agent_response = self.llm.generate_reply(history)
-
-        # create the user message in database
-        self.message_repo.create(
-            conversation_id=conversation.id, role=MessageRole.user, content=message
-        )
 
         # create the agent message in database
         self.message_repo.create(
@@ -70,10 +75,7 @@ class ChatService:
             content=agent_response.content,
         )
 
-        return {
-            "conversation_id": conversation.id,
-            "reply": agent_response.content,
-        }
+        return ChatResult(conversation_id=conversation.id, reply=agent_response.content)
 
 
 def get_chat_service(

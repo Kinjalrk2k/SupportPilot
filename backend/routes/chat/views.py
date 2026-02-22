@@ -18,7 +18,7 @@ def chat(request: ChatRequest, service: ChatServiceDep) -> ChatResponse:
         )
 
         return ChatResponse(
-            conversation_id=response["conversation_id"], reply=response["reply"]
+            conversation_id=response.conversation_id, reply=response.reply
         )
 
     except ConversationNotFoundExpection as e:
