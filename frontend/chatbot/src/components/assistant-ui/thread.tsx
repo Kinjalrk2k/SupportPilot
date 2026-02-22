@@ -53,7 +53,7 @@ export const Thread: FC = () => {
         <ThreadPrimitive.Messages
           components={{
             UserMessage,
-            EditComposer,
+            // EditComposer,
             AssistantMessage,
           }}
         />
@@ -151,8 +151,8 @@ const Composer: FC = () => {
 
 const ComposerAction: FC = () => {
   return (
-    <div className="aui-composer-action-wrapper relative mx-2 mb-2 flex items-center justify-between">
-      <ComposerAddAttachment />
+    <div className="aui-composer-action-wrapper relative mx-2 mb-2 flex items-center justify-end">
+      {/* <ComposerAddAttachment /> */}
       <AuiIf condition={(s) => !s.thread.isRunning}>
         <ComposerPrimitive.Send asChild>
           <TooltipIconButton
@@ -237,7 +237,7 @@ const AssistantActionBar: FC = () => {
           </AuiIf>
         </TooltipIconButton>
       </ActionBarPrimitive.Copy>
-      <ActionBarPrimitive.Reload asChild>
+      {/* <ActionBarPrimitive.Reload asChild>
         <TooltipIconButton tooltip="Refresh">
           <RefreshCwIcon />
         </TooltipIconButton>
@@ -261,9 +261,9 @@ const AssistantActionBar: FC = () => {
               <DownloadIcon className="size-4" />
               Export as Markdown
             </ActionBarMorePrimitive.Item>
-          </ActionBarPrimitive.ExportMarkdown>
+          </ActionBarPrimitive.ExportMarkdown> 
         </ActionBarMorePrimitive.Content>
-      </ActionBarMorePrimitive.Root>
+      </ActionBarMorePrimitive.Root>*/}
     </ActionBarPrimitive.Root>
   );
 };
@@ -281,7 +281,7 @@ const UserMessage: FC = () => {
           <MessagePrimitive.Parts />
         </div>
         <div className="aui-user-action-bar-wrapper absolute top-1/2 left-0 -translate-x-full -translate-y-1/2 pr-2">
-          <UserActionBar />
+          {/* <UserActionBar /> */}
         </div>
       </div>
 
