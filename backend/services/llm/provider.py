@@ -2,6 +2,7 @@ from .base import BaseLLMService
 from dotenv import load_dotenv
 import os
 from .groq import GroqLLMService
+from .local import LocalLLMService
 from typing import Annotated
 from fastapi import Depends
 
@@ -14,6 +15,8 @@ def get_llm_service() -> BaseLLMService:
     match provider:
         case "groq":
             return GroqLLMService()
+        case "local":
+            return LocalLLMService()
         case _:
             raise ValueError(f"Unsupported LLM provider: {provider}")
 
