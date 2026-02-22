@@ -5,23 +5,16 @@ from uuid import UUID
 from typing import Optional
 from models.all import MessageRole
 from langchain.messages import HumanMessage, AIMessage
-from services.groq_llm import GroqLLMService
+from services.llm.groq import GroqLLMService
 from repository.conversation_repository import ConversationRepositoryDep
 from repository.message_repository import MessageRepositoryDep
-from services.groq_llm import GroqLLMServiceDep
+from services.llm.provider import LLMServiceDep
+from services.llm.base import BaseLLMService
 from typing import Annotated
 from fastapi import Depends
 from dataclasses import dataclass
-
-
-class ConversationNotFoundExpection(Exception):
-    pass
-
-
-@dataclass(frozen=True)
-class ChatResult:
-    conversation_id: UUID
-    reply: str
+from .dtos import ChatResult
+from .exceptions import ConversationNotFoundExpection
 
 
 class ChatService:
@@ -33,7 +26,7 @@ class ChatService:
         self,
         conversation_repo: ConversationRepository,
         message_repo: MessageRepository,
-        llm: GroqLLMService,
+        llm: BaseLLMService,
     ):
 
         self.conversation_repo = conversation_repo
@@ -81,7 +74,7 @@ class ChatService:
 def get_chat_service(
     conversation_repo: ConversationRepositoryDep,
     message_repo: MessageRepositoryDep,
-    llm: GroqLLMServiceDep,
+    llm: LLMServiceDep,
 ) -> ChatService:
     return ChatService(conversation_repo, message_repo, llm)
 

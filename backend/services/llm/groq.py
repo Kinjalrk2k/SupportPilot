@@ -5,11 +5,12 @@ from langchain.messages import AnyMessage, AIMessage
 from dotenv import load_dotenv
 from typing import Annotated
 from fastapi import Depends
+from .base import BaseLLMService
 
 load_dotenv()
 
 
-class GroqLLMService:
+class GroqLLMService(BaseLLMService):
     model: BaseChatModel
     agent: Runnable
 
