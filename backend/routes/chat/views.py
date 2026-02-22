@@ -1,22 +1,12 @@
 from fastapi import APIRouter
 from config.db import SessionDep
-from pydantic import BaseModel
-from typing import Optional
 from uuid import UUID
 from models.all import Conversation, Message, MessageRole
 from services.groq import generate_reply
 from langchain.messages import HumanMessage, AIMessage
+from .schemas import ChatRequest, ChatResponse
 
 router = APIRouter()
-
-# schemas
-class ChatRequest(BaseModel):
-    conversation_id: Optional[UUID] = None
-    message: str
-
-class ChatResponse(BaseModel):
-    conversation_id: UUID
-    reply: str
 
 @router.post("/")
 def chat(request: ChatRequest, db: SessionDep) -> ChatResponse:
