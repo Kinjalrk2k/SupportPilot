@@ -2,6 +2,8 @@ from config.db import SessionDep
 from uuid import UUID
 from models.all import MessageRole, Message
 from sqlalchemy import select
+from typing import Annotated
+from fastapi import Depends
 
 
 class MessageRepository:
@@ -21,3 +23,12 @@ class MessageRepository:
             .order_by(Message.created_at.asc())
         )
         return list(self.db.scalars(stmt))
+
+
+def get_message_repository(
+    db: SessionDep,
+) -> MessageRepository:
+    return MessageRepository(db)
+
+
+MessageRepositoryDep = Annotated[MessageRepository, Depends(get_message_repository)]

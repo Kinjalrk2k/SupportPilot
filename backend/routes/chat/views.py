@@ -1,16 +1,16 @@
 from fastapi import APIRouter, HTTPException, status
 from .schemas import ChatRequest, ChatResponse
-from dependencies.service import get_chat_service
-from services.chat_service import ChatService, ConversationNotFoundExpection
+from services.chat_service import (
+    ConversationNotFoundExpection,
+    ChatServiceDep,
+)
 from fastapi import Depends
 
 router = APIRouter()
 
 
 @router.post("/")
-def chat(
-    request: ChatRequest, service: ChatService = Depends(get_chat_service)
-) -> ChatResponse:
+def chat(request: ChatRequest, service: ChatServiceDep) -> ChatResponse:
 
     try:
         response = service.chat(

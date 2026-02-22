@@ -1,11 +1,16 @@
 from config.db import SessionDep
-from repository.conversation import ConversationRepository
-from repository.message import MessageRepository
+from repository.conversation_repository import ConversationRepository
+from repository.message_repository import MessageRepository
 from uuid import UUID
 from typing import Optional
 from models.all import MessageRole
 from langchain.messages import HumanMessage, AIMessage
 from services.groq_llm import GroqLLMService
+from repository.conversation_repository import ConversationRepositoryDep
+from repository.message_repository import MessageRepositoryDep
+from services.groq_llm import GroqLLMServiceDep
+from typing import Annotated
+from fastapi import Depends
 
 
 class ConversationNotFoundExpection(Exception):
@@ -69,3 +74,14 @@ class ChatService:
             "conversation_id": conversation.id,
             "reply": agent_response.content,
         }
+
+
+def get_chat_service(
+    conversation_repo: ConversationRepositoryDep,
+    message_repo: MessageRepositoryDep,
+    llm: GroqLLMServiceDep,
+) -> ChatService:
+    return ChatService(conversation_repo, message_repo, llm)
+
+
+ChatServiceDep = Annotated[ChatService, Depends(get_chat_service)]

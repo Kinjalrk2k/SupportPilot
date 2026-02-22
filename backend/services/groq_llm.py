@@ -3,6 +3,8 @@ from langchain.agents import create_agent
 from langchain_core.runnables import Runnable
 from langchain.messages import AnyMessage, AIMessage
 from dotenv import load_dotenv
+from typing import Annotated
+from fastapi import Depends
 
 load_dotenv()
 
@@ -20,3 +22,10 @@ class GroqLLMService:
     def generate_reply(self, messages: list[AnyMessage]) -> AIMessage:
         response = self.agent.invoke({"messages": messages})
         return response["messages"][-1]
+
+
+def get_groq_llm_service() -> GroqLLMService:
+    return GroqLLMService()
+
+
+GroqLLMServiceDep = Annotated[GroqLLMService, Depends(get_groq_llm_service)]
