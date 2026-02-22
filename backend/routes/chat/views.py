@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from config.db import SessionDep
 from uuid import UUID
 from models.all import Conversation, Message, MessageRole
@@ -15,6 +15,11 @@ def chat(request: ChatRequest, db: SessionDep) -> ChatResponse:
         conversation = db.query(Conversation)\
             .filter(Conversation.id == request.conversation_id)\
             .first()
+        if not conversation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="Conversation not found"
+            )
     
     else: # new conversation
         conversation = Conversation()
