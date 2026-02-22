@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import StreamingResponse
 from .schemas import ChatRequest, ChatResponse
 from services.chat.service import ChatServiceDep
 from services.chat.exceptions import ConversationNotFoundExpection
@@ -20,3 +21,16 @@ def chat(request: ChatRequest, service: ChatServiceDep) -> ChatResponse:
 
     except ConversationNotFoundExpection as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.post("/stream")
+def stream(request: ChatRequest, service: ChatServiceDep):
+    conversation_id, generator = service.stream_chat(
+        conversation_id=request.conversation_id, message=request.message
+    )
+
+    return StreamingResponse(
+        generator,
+        media_type="text/plain",
+        headers={"X-Conversation-Id": str(conversation_id)},
+    )

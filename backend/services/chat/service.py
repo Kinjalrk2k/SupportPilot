@@ -15,6 +15,7 @@ from fastapi import Depends
 from dataclasses import dataclass
 from .dtos import ChatResult
 from .exceptions import ConversationNotFoundExpection
+from utils.chat_history import db_messages_to_history
 
 
 class ChatService:
@@ -33,7 +34,7 @@ class ChatService:
         self.message_repo = message_repo
         self.llm = llm
 
-    def chat(self, conversation_id: Optional[UUID], message: str):
+    def chat(self, conversation_id: Optional[UUID], message: str) -> ChatResult:
         if not conversation_id:  # new conversation
             conversation = self.conversation_repo.create()
         else:  # ongoing conversation
@@ -43,23 +44,18 @@ class ChatService:
                     f"Conversation {conversation_id} not found"
                 )
 
+        # history of messages
+        messages = self.message_repo.get_by_conversation_id(conversation_id)
+        history = db_messages_to_history(messages)
+        history.append(HumanMessage(content=message))
+
+        # agent
+        agent_response = self.llm.generate_reply(history)
+
         # create the user message in database
         self.message_repo.create(
             conversation_id=conversation.id, role=MessageRole.user, content=message
         )
-
-        # history of messages
-        messages = self.message_repo.get_by_conversation_id(conversation_id)
-        history = []
-        for m in messages:
-            match m.role:
-                case MessageRole.user:
-                    history.append(HumanMessage(content=m.content))
-                case MessageRole.assistant:
-                    history.append(AIMessage(content=m.content))
-
-        # agent
-        agent_response = self.llm.generate_reply(history)
 
         # create the agent message in database
         self.message_repo.create(
@@ -69,6 +65,43 @@ class ChatService:
         )
 
         return ChatResult(conversation_id=conversation.id, reply=agent_response.content)
+
+    def stream_chat(self, conversation_id: Optional[UUID], message: str):
+        if not conversation_id:  # new conversation
+            conversation = self.conversation_repo.create()
+        else:  # ongoing conversation
+            conversation = self.conversation_repo.get_by_id(conversation_id)
+            if not conversation:
+                raise ConversationNotFoundExpection(
+                    f"Conversation {conversation_id} not found"
+                )
+
+        # history of messages
+        messages = self.message_repo.get_by_conversation_id(conversation_id)
+        history = db_messages_to_history(messages)
+        history.append(HumanMessage(content=message))
+
+        # stream
+        def generator():
+            full_response = ""
+
+            for token in self.llm.stream_reply(history):
+                full_response += token
+                yield token
+
+            # create the user message in database
+            self.message_repo.create(
+                conversation_id=conversation.id, role=MessageRole.user, content=message
+            )
+
+            # create the agent message in database
+            self.message_repo.create(
+                conversation_id=conversation.id,
+                role=MessageRole.assistant,
+                content=full_response,
+            )
+
+        return conversation.id, generator()
 
 
 def get_chat_service(
