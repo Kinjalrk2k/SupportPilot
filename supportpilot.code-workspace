@@ -3,5 +3,6 @@
     { "name": "root", "path": "." },
     { "name": "docker", "path": "./docker" },
     { "name": "backend", "path": "./backend" },
+    { "name": "chatbot-frontend", "path": "./frontend/chatbot" },
   ],
 }
