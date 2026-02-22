@@ -1,71 +1,28 @@
 from fastapi import APIRouter, HTTPException, status
-from config.db import SessionDep
-from uuid import UUID
-from models.all import Conversation, Message, MessageRole
-from services.groq import generate_reply
-from langchain.messages import HumanMessage, AIMessage
 from .schemas import ChatRequest, ChatResponse
+from dependencies.service import get_chat_service
+from services.chat_service import ChatService, ConversationNotFoundExpection
+from fastapi import Depends
 
 router = APIRouter()
 
 @router.post("/")
-def chat(request: ChatRequest, db: SessionDep) -> ChatResponse:
-    print(request)
-    if request.conversation_id: # ongoing conversation
-        conversation = db.query(Conversation)\
-            .filter(Conversation.id == request.conversation_id)\
-            .first()
-        if not conversation:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, 
-                detail="Conversation not found"
-            )
+def chat(
+    request: ChatRequest, 
+    service: ChatService = Depends(get_chat_service)
+) -> ChatResponse:
     
-    else: # new conversation
-        conversation = Conversation()
-        db.add(conversation)
-        db.commit()
-        db.refresh(conversation)
+    try:
+        response = service.chat(
+            conversation_id=request.conversation_id, 
+            message=request.message
+        )
 
-    # save the user message
-    user_message = Message(
-        conversation_id=conversation.id,
-        role=MessageRole.user,
-        content=request.message
-    )
-    db.add(user_message)
-    db.commit()
-
-    # history
-    messages: list[Message] = db.query(Message)\
-        .filter(Message.conversation_id == conversation.id)\
-        .order_by(Message.created_at.asc())\
-        .all()
+        return ChatResponse(
+            conversation_id=response["conversation_id"], 
+            reply=response["reply"]
+        )
     
-    history = []
-    for m in messages:
-        match m.role:
-            case MessageRole.user:
-                history.append(HumanMessage(content=m.content))
-            case MessageRole.assistant:
-                history.append(AIMessage(content=m.content))
-
-    history.append(HumanMessage(content=request.message))
-    agent_response = generate_reply(history)
-
-    agent_message = Message(
-        conversation_id=conversation.id,
-        role=MessageRole.assistant,
-        content=agent_response.content
-    )
-    db.add(agent_message)
-    db.commit()
-
-    return ChatResponse(
-        conversation_id=conversation.id,
-        reply=agent_response.content
-    )
-
-
-
-
+    except ConversationNotFoundExpection as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    
