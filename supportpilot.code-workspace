@@ -1,6 +1,7 @@
 {
   "folders": [
     { "name": "root", "path": "." },
+    { "name": "sandbox", "path": "./sandbox" },
     { "name": "docker", "path": "./docker" },
     { "name": "backend", "path": "./backend" },
     { "name": "chatbot-frontend", "path": "./frontend/chatbot" },
