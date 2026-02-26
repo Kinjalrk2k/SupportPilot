@@ -15,6 +15,8 @@ from typing import TypedDict, Annotated
 class AgentState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
+    summary: str
+
     category: str
     priority: str
     issue_analyzer_confidence: float
@@ -68,28 +70,42 @@ issue_extraction_parser = PydanticOutputParser(pydantic_object=IssueExtractionRe
 print(issue_extraction_parser.get_format_instructions())
 
 # %%
+from langchain_core.messages import HumanMessage
+
+def generate_transcript(messages: list[BaseMessage]) -> str:
+    transcript = ""
+    for msg in messages:
+        role = "User" if isinstance(msg, HumanMessage) else "Bot"
+        transcript += f"{role}: {msg.content}\n"
+    return transcript
+
+# %%
 from langchain_core.prompts import PromptTemplate
 
 def analyze_issue(state: AgentState):
-    latest_message = state["messages"][-1].content
-
     prompt = PromptTemplate(
         template="""
             You are a strict data extraction algorithm."
-            Analyze the user's message and extract the exact fields requested.
+            Analyze the messages and extract the exact fields requested.
                   
             {format_instructions}
-            
-            User Message: {message}
+
+            PAST CONTEXT SUMMARY:
+            {summary}
+
+            RECENT TRANSCRIPT:
+            {transcript}
         """,
-        input_variables=["message"],
+        input_variables=["summary", "transcript"],
         partial_variables={"format_instructions": issue_extraction_parser.get_format_instructions()}
     )
 
     analyzer_chain = prompt | llm | issue_extraction_parser
 
     try:
-        result = analyzer_chain.invoke({"message": latest_message})
+        summary = state.get('summary', 'No prior context.')
+        transcript = generate_transcript(state["messages"])
+        result = analyzer_chain.invoke({"summary": summary, "transcript": transcript})
         print(f"[analyze_issue] {result}")
         print(f"[analyze_issue] {type(result)}")
     except Exception as e:
@@ -125,31 +141,82 @@ def get_sentiment(sentiment_score: float) -> Literal["Angry", "Frustrated", "Neu
 from langchain_core.messages import SystemMessage
 
 def generate_reply(state: AgentState):
-    default_issue_analize_result = IssueExtractionResult()
-    category = state.get("category", default_issue_analize_result.category)
-    priority = state.get("priority", default_issue_analize_result.priority)
-    sentiment_score = state.get("sentiment_score", default_issue_analize_result.sentiment_score)
-    sentiment = get_sentiment(sentiment_score)
+   default_issue_analize_result = IssueExtractionResult()
+   category = state.get("category", default_issue_analize_result.category)
+   priority = state.get("priority", default_issue_analize_result.priority)
+   sentiment_score = state.get("sentiment_score", default_issue_analize_result.sentiment_score)
+   sentiment = get_sentiment(sentiment_score)
+   summary = state.get('summary', 'No prior context.')
 
-    sys_prompt = f"""You are a world-class, empathetic customer support agent.
+   sys_prompt = f"""You are a world-class, empathetic customer support agent.
+   
+   PAST CONTEXT SUMMARY:
+   {summary}
+
+   CURRENT TICKET CONTEXT:
+   - Issue Category: {category}
+   - Priority Level: {priority}
+   - User's Current Emotion: {sentiment}
     
-    CURRENT TICKET CONTEXT:
-    - Issue Category: {category}
-    - Priority Level: {priority}
-    - User's Current Emotion: {sentiment}
+   YOUR INSTRUCTIONS:
+   1. Acknowledge their issue directly based on the '{category}'.
+   2. Adjust your tone perfectly to match their '{sentiment}' emotion. 
+      - If they are 'Angry' or 'Frustrated', be deeply apologetic, highly professional, and concise. Get straight to the point.
+      - If they are 'Neutral' 'Satisfied' or 'Happy', be warm, conversational, and friendly.
+   3. IMPORTANT: Do NOT explicitly mention the category, priority or emotion. Just naturally embody the correct tone.
+   """
+
+   messages = [SystemMessage(content=sys_prompt)] + state["messages"]
+
+   response = llm.invoke(messages)
+   return {"messages": [response]}
+
+# %%
+from langchain_core.messages import HumanMessage, RemoveMessage
+
+def summarize_conversation(state: AgentState):
+    prompt = PromptTemplate(
+        template="""Update the following conversation summary based on the new messages.
+
+        CURRENT SUMMARY: {summary}
+
+        NEW MESSAGES TO SUMMARIZE:
+        {transcript}
+        """,
+        input_variables=["summary", "messages"]
+    )
+
+    # summarize everything except the last two
+    summary = state.get("summary", "")
+    messages = state["messages"]
+    messages_to_summarize = messages[:-2]
+    transcript = generate_transcript(messages_to_summarize)
     
-    YOUR INSTRUCTIONS:
-    1. Acknowledge their issue directly based on the '{category}'.
-    2. Adjust your tone perfectly to match their '{sentiment}' emotion. 
-       - If they are 'Angry' or 'Frustrated', be deeply apologetic, highly professional, and concise. Get straight to the point.
-       - If they are 'Neutral' 'Satisfied' or 'Happy', be warm, conversational, and friendly.
-    3. IMPORTANT: Do NOT explicitly mention the category, priority or emotion. Just naturally embody the correct tone.
-    """
+    summarizer_chain = prompt | llm
+    new_summary = summarizer_chain.invoke({
+        "summary": summary,
+        "transcript": transcript
+    })
 
-    messages = [SystemMessage(content=sys_prompt)] + state["messages"]
+    deleted_messages = [RemoveMessage(id=msg.id) for msg in messages_to_summarize]
 
-    response = llm.invoke(messages)
-    return {"messages": [response]}
+    return {
+        "summary": new_summary.content,
+        "messages": deleted_messages,
+    }
+
+
+# %%
+from langgraph.graph import END
+
+def should_summarize(state: AgentState):
+    messages = state["messages"]
+
+    # summarize only if messages are more than 6
+    if len(messages) > 6:
+        return "summarize_conversation"
+    
+    return END
 
 # %%
 from langgraph.graph import StateGraph, START, END
@@ -158,10 +225,19 @@ workflow = StateGraph(AgentState)
 
 workflow.add_node("analyze_issue", analyze_issue)
 workflow.add_node("generate_reply", generate_reply)
+workflow.add_node("summarize_conversation", summarize_conversation)
 
 workflow.add_edge(START, "analyze_issue")
 workflow.add_edge("analyze_issue", "generate_reply")
-workflow.add_edge("generate_reply", END)
+workflow.add_conditional_edges(
+    "generate_reply", 
+    should_summarize,
+    {
+        "summarize_conversation": "summarize_conversation",
+        END: END,
+    }
+)
+workflow.add_edge("summarize_conversation", END)
 
 graph = workflow.compile()
 
