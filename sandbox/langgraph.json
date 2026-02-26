@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "support_pilot_agent": "./agent.py:graph"
+  },
+  "env": ".env"
+}
