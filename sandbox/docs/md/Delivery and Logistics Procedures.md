@@ -1,12 +1,10 @@
 # Delivery and Logistics Procedures
 
-### Delivery and Logistics Procedures for QuickBite
-
 These procedures outline how **QuickBite** manages the delivery process from order acceptance to successful handover. They are user-facing guides to set expectations, explain statuses, and provide clear steps for troubleshooting common delivery-related issues. QuickBite partners with independent delivery partners (gig workers) who use our app for routing, navigation, and communication.
 
 Delivery times vary based on distance, traffic, weather, restaurant preparation speed, and demand. Typical estimates: 30–60 minutes from placement to delivery in urban areas like Delhi.
 
-#### 1. Delivery Issue Troubleshooting Guide
+## 1. Delivery Issue Troubleshooting Guide
 
 Use this section when your delivery doesn't go as planned. Report issues promptly via the app for fastest resolution (ideally within 60 minutes of delivery or expected time).
 
@@ -37,7 +35,7 @@ Use this section when your delivery doesn't go as planned. Report issues promptl
 - Avoid changing address mid-delivery (causes rerouting delays).
 - During monsoons or peak hours (e.g., weekends in Pitampura), add buffer time or choose scheduled delivery.
 
-#### 2. Driver Communication Protocols
+## 2. Driver Communication Protocols
 
 QuickBite prioritizes safe, masked communication between users and delivery partners.
 
@@ -56,7 +54,7 @@ QuickBite prioritizes safe, masked communication between users and delivery part
 - Can: Ask for gate codes, confirm exact spot, provide ETA.
 - Cannot: Enter your home without permission, accept cash tips outside app, or make personal requests.
 
-#### 3. Weather and External Disruption Policies
+## 3. Weather and External Disruption Policies
 
 External factors can impact deliveries—QuickBite adjusts dynamically.
 

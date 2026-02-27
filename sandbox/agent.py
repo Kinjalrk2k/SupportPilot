@@ -3,15 +3,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # %%
-from phoenix.otel import register
-from openinference.instrumentation.langchain import LangChainInstrumentor
+# from phoenix.otel import register
+# from openinference.instrumentation.langchain import LangChainInstrumentor
 
-# Initialize Phoenix Tracer (Defaults to sending traces to http://localhost:6006)
-tracer_provider = register(
-    project_name="support_pilot_agent"
-)
-# Auto-instrument all LangChain and LangGraph calls
-LangChainInstrumentor().instrument(tracer_provider=tracer_provider)
+# # Initialize Phoenix Tracer (Defaults to sending traces to http://localhost:6006)
+# tracer_provider = register(
+#     project_name="support_pilot_agent"
+# )
+# # Auto-instrument all LangChain and LangGraph calls
+# LangChainInstrumentor().instrument(tracer_provider=tracer_provider)
 
 # %%
 from langchain.chat_models import init_chat_model
@@ -32,6 +32,8 @@ class AgentState(TypedDict):
     priority: str
     issue_analyzer_confidence: float
     sentiment: float
+
+    retrieved_context: str
 
 # %%
 from pydantic import BaseModel, Field, model_validator
@@ -81,13 +83,27 @@ issue_extraction_parser = PydanticOutputParser(pydantic_object=IssueExtractionRe
 print(issue_extraction_parser.get_format_instructions())
 
 # %%
+# as new versions have the text in parts: [{'type': 'text', 'text': '...'}]
+def extract_message_content(message: BaseMessage):
+    content = message.content
+    
+    if isinstance(content, str):
+        return content
+    
+    if isinstance(content, list):
+        return " ".join(part.get("text", "") for part in content if isinstance(part, dict))
+    
+    return str(content)
+
+# %%
 from langchain_core.messages import HumanMessage
 
 def generate_transcript(messages: list[BaseMessage]) -> str:
     transcript = ""
     for msg in messages:
         role = "User" if isinstance(msg, HumanMessage) else "Bot"
-        transcript += f"{role}: {msg.content}\n"
+        content = extract_message_content(msg)
+        transcript += f"{role}: {content}\n"
     return transcript
 
 # %%
@@ -116,6 +132,7 @@ def analyze_issue(state: AgentState):
     try:
         summary = state.get('summary', 'No prior context.')
         transcript = generate_transcript(state["messages"])
+        print("transcript", transcript)
         result = analyzer_chain.invoke({"summary": summary, "transcript": transcript})
         print(f"[analyze_issue] {result}")
         print(f"[analyze_issue] {type(result)}")
@@ -230,6 +247,32 @@ def should_summarize(state: AgentState):
     return END
 
 # %%
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
+
+embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+vector_db = Chroma(
+    persist_directory="./chroma_db/",
+    embedding_function=embeddings
+)
+
+# %%
+def retrieve_knowledge(state: AgentState):
+    latest_message_content = extract_message_content(state["messages"][-1])
+    print(type(latest_message_content))
+    print(latest_message_content)
+    results = vector_db.similarity_search(latest_message_content, k=3)
+
+    retrieved_context = "No relevant policies found in the database."
+    if results:
+        retrieved_context = ""
+        for i, doc in enumerate(results):
+            retrieved_context += f"--- Document Chunk {i+1} ---\n"
+            retrieved_context += f"{doc.page_content}\n\n"
+
+    return {"retrieved_context": retrieved_context}
+
+# %%
 from langgraph.graph import StateGraph, START, END
 
 workflow = StateGraph(AgentState)
@@ -237,9 +280,11 @@ workflow = StateGraph(AgentState)
 workflow.add_node("analyze_issue", analyze_issue)
 workflow.add_node("generate_reply", generate_reply)
 workflow.add_node("summarize_conversation", summarize_conversation)
+workflow.add_node("retrieve_knowledge", retrieve_knowledge)
 
 workflow.add_edge(START, "analyze_issue")
-workflow.add_edge("analyze_issue", "generate_reply")
+workflow.add_edge("analyze_issue", "retrieve_knowledge")
+workflow.add_edge("retrieve_knowledge", "generate_reply")
 workflow.add_conditional_edges(
     "generate_reply", 
     should_summarize,

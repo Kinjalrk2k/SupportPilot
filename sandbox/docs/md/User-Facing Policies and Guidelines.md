@@ -4,7 +4,7 @@ Here is a detailed set of **User-Facing Policies and Guidelines** for a fictitio
 
 QuickBite is a platform that connects users with restaurants and independent delivery partners to facilitate ordering and delivery of food and other items.
 
-### 1. Terms of Service
+## 1. Terms of Service
 
 **Last Updated: February 27, 2026**
 
@@ -60,7 +60,7 @@ We may update these Terms. Continued use constitutes acceptance. Check back peri
 **1.10 Termination**  
 We may suspend or terminate your account for violations, at our discretion.
 
-### 2. Privacy Policy
+## 2. Privacy Policy
 
 **Last Updated: February 27, 2026**
 
@@ -103,7 +103,7 @@ Our services are not directed at children under 13 (or 16 in some regions). We d
 **2.7 Changes**  
 We may update this policy; material changes will be notified via email or in-app notice.
 
-### 3. Cancellation and Refund Policy
+## 3. Cancellation and Refund Policy
 
 **3.1 Order Cancellation by User**
 
@@ -131,7 +131,7 @@ We may update this policy; material changes will be notified via email or in-app
 **3.5 Promotions and Credits**  
 Refunds on promotional/discount orders may return as platform credits.
 
-### 4. Delivery and Service Fees Policy
+## 4. Delivery and Service Fees Policy
 
 **4.1 Fees Explained**
 

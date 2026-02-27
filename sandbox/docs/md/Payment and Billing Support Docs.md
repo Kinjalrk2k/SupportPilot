@@ -1,12 +1,10 @@
 # Payment and Billing Support Docs
 
-### Payment and Billing Support Docs for QuickBite
-
 These documents provide users of the **QuickBite** food delivery app with clear, step-by-step guidance on payments, common billing issues, and resolutions. QuickBite supports secure, convenient payments through trusted third-party gateways (e.g., Razorpay, PayU, or similar in India). All transactions are encrypted and compliant with PCI-DSS standards.
 
 Use the in-app "Help" section or "Orders" tab to access receipts, payment history, and report issues. For urgent problems, tap "Chat with Support" on any order screen.
 
-#### 1. Payment Methods Guide
+## 1. Payment Methods Guide
 
 QuickBite offers multiple secure options tailored for users in India and other regions.
 
@@ -33,7 +31,7 @@ QuickBite offers multiple secure options tailored for users in India and other r
 - Update expired cards promptly to avoid failed recurring promotions.
 - Use saved methods to skip re-entering details.
 
-#### 2. Billing Disputes Resolution Guide
+## 2. Billing Disputes Resolution Guide
 
 Billing disputes include unauthorized charges, double billing, incorrect amounts, promo code failures, or unrecognized transactions.
 
@@ -64,7 +62,7 @@ Use this table for quick reference:
 - Review order summary carefully before confirming payment.
 - Use strong passwords and enable 2FA on your QuickBite account.
 
-#### 3. Tax and Invoice Explanations Guide
+## 3. Tax and Invoice Explanations Guide
 
 Understand what you're paying for transparency.
 

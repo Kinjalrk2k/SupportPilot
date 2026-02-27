@@ -1,7 +1,5 @@
 # FAQs and Knowledge Base Articles
 
-### FAQs and Knowledge Base Articles for QuickBite
-
 This comprehensive **FAQs and Knowledge Base** section is designed for the **QuickBite** food delivery app (fictitious, Delhi-based, operating in areas like Pitampura). It covers the most common user queries based on typical food delivery support patterns: order issues (most frequent), deliveries, payments, accounts, policies, and more.
 
 Organized into categories with searchable, concise Q&A format. Each article includes:
@@ -13,7 +11,7 @@ Organized into categories with searchable, concise Q&A format. Each article incl
 
 Users access this via in-app Help Center > Search or Categories. Aim for 80-90% query resolution without human escalation.
 
-#### 1. General & App Usage
+## 1. General & App Usage
 
 **Q: How do I download and get started with QuickBite?**  
 A: Download QuickBite from Google Play Store or Apple App Store (search "QuickBite Food Delivery"). Sign up with phone number or email, verify via OTP, add a delivery address (e.g., your Pitampura location), and start browsing restaurants. First-time users get welcome offers—check "Offers" tab.
@@ -27,7 +25,7 @@ A: Most restaurants operate 10 AM–11 PM, but varies. Delivery available 24/7 i
 **Q: How do I contact QuickBite support?**  
 A: Use in-app chat: Profile > Help > "Chat with Support" (AI-assisted, 24/7; escalates to human if needed). Email: support@quickbite.com. For urgent issues (e.g., active order), use order-specific "Help" button.
 
-#### 2. Ordering & Order Management
+## 2. Ordering & Order Management
 
 **Q: Can I edit or cancel my order after placing it?**  
 A: Yes, within ~2 minutes (before restaurant acceptance)—go to "Orders" > select order > "Edit" or "Cancel." After acceptance, edits aren't possible; cancellations rare (may incur fees). See [Order Placement Guide](#) and [Cancellation Policy](#).
@@ -44,7 +42,7 @@ A: Report immediately with photos via "Help" > "Food Quality Issue." Eligible fo
 **Q: Can I schedule an order for later?**  
 A: Yes—during checkout, select "Schedule" and choose date/time (up to 7 days ahead, subject to restaurant availability).
 
-#### 3. Delivery & Tracking
+## 3. Delivery & Tracking
 
 **Q: How do I track my order?**  
 A: In "Orders" tab—see real-time status (Placed → Accepted → Preparing → Out for Delivery → Delivered) and live map. Enable notifications for updates. See [Tracking Guide](#).
@@ -58,7 +56,7 @@ A: Partners prioritize safety—delays common. App shows alerts. No automatic re
 **Q: Can I tip the delivery partner?**  
 A: Yes, optional at checkout or after delivery (100% to partner). Cash tips also accepted.
 
-#### 4. Payments & Billing
+## 4. Payments & Billing
 
 **Q: What payment methods does QuickBite accept?**  
 A: UPI (Google Pay, PhonePe), cards (Visa/Mastercard/RuPay), wallets (Paytm), net banking, COD (limited). Add/manage in Profile > Payment Methods. See [Payment Methods Guide](#).
@@ -72,7 +70,7 @@ A: Report via "Orders" > "Report Billing Issue" with screenshots. Refunds to ori
 **Q: Where can I find my invoice/receipt?**  
 A: "Orders" > select order > "View Receipt." Includes breakdown (food, taxes, fees, tip). Email also sent.
 
-#### 5. Account & Security
+## 5. Account & Security
 
 **Q: How do I reset my password?**  
 A: Login screen > "Forgot Password?" > enter phone/email > verify OTP > set new password. See [Account Recovery Guide](#).
@@ -86,7 +84,7 @@ A: Change password immediately, enable/reset 2FA, review activity, log out other
 **Q: How do I delete my QuickBite account?**  
 A: Profile > Account & Security > "Delete Account" > confirm (30-day hold; cancel anytime). Data permanently removed after.
 
-#### 6. Policies & Refunds
+## 6. Policies & Refunds
 
 **Q: What is QuickBite's refund policy?**  
 A: Full refund if not accepted/prepared; partial for missing/wrong items; discretionary for quality/delay. Issued to original method or credits. See [Cancellation and Refund Policy](#).
@@ -100,7 +98,7 @@ A: Restaurants provide info—use tags/filters. Add notes in instructions. We ca
 **Q: Can I get a refund for taste preferences (e.g., too spicy)?**  
 A: No—taste subjective. Refunds for quality/safety issues only (with evidence).
 
-#### 7. Promotions & Offers
+## 7. Promotions & Offers
 
 **Q: Why didn't my promo code apply?**  
 A: Check eligibility (min order, first-time, expiry). Apply at checkout. Issues? Report via chat.
@@ -108,7 +106,7 @@ A: Check eligibility (min order, first-time, expiry). Apply at checkout. Issues?
 **Q: How do I use QuickBite credits/refund credits?**  
 A: Auto-applied at checkout (priority over other payments). Non-withdrawable; expire after 90 days typically.
 
-#### 8. Restaurant & Menu Issues
+## 8. Restaurant & Menu Issues
 
 **Q: Menu item unavailable after ordering—what happens?**  
 A: Restaurant may cancel/substitute (notify you). Full refund if canceled; partial if substituted poorly.

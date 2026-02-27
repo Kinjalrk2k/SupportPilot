@@ -1,12 +1,10 @@
 # Order Management and Troubleshooting Guides
 
-### Order Management and Troubleshooting Guides for QuickBite
-
 These guides are designed to help users of the QuickBite food delivery app manage their orders effectively and troubleshoot common issues. They are written in clear, step-by-step language to empower users to resolve problems independently while providing escalation paths to customer support. QuickBite connects users with local restaurants and independent delivery partners for seamless food ordering and delivery.
 
 All guides assume you're using the latest version of the QuickBite app (available on iOS and Android). If you're experiencing app crashes or technical glitches, update the app or restart your device first.
 
-#### 1. Order Placement Guide
+## 1. Order Placement Guide
 
 This guide covers how to place, edit, or cancel an order. Orders are processed in real-time, so act quickly for changes.
 
@@ -36,7 +34,7 @@ This guide covers how to place, edit, or cancel an order. Orders are processed i
 - During peak hours (e.g., evenings), expect surge pricing—check alternatives if needed.
 - For group orders, use the "Share Cart" feature to collaborate with friends.
 
-#### 2. Tracking and Status Explanations Guide
+## 2. Tracking and Status Explanations Guide
 
 Track your order in real-time via the app's "Orders" tab. Push notifications keep you updated.
 
@@ -60,7 +58,7 @@ Use this table for quick reference:
 - **Delayed Beyond Estimate**: Factors like traffic or high demand can cause this. If >30 minutes late, tap "Help" on the order screen for automated credit or support chat.
 - **Wrong Location Shown**: Verify your address in profile. If partner's location is off, contact support—they can reroute.
 
-#### 3. Missing/Wrong Items Protocol
+## 3. Missing/Wrong Items Protocol
 
 If your order arrives incomplete or incorrect, report it promptly for quick resolution.
 
@@ -82,7 +80,7 @@ If your order arrives incomplete or incorrect, report it promptly for quick reso
 - For frequent issues with a restaurant, leave a review to help others.
 - Note: Taste preferences (e.g., "too spicy") are not eligible for refunds unless specified as an allergen.
 
-#### 4. Allergen and Dietary Info Handling Guide
+## 4. Allergen and Dietary Info Handling Guide
 
 QuickBite prioritizes food safety. Restaurants provide info, but always verify if you have allergies.
 

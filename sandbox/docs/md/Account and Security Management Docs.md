@@ -1,12 +1,10 @@
 # Account and Security Management
 
-### Account and Security Management Docs for QuickBite
-
 These documents guide **QuickBite** users (the fictitious food delivery app) on creating, managing, and securing their accounts. QuickBite prioritizes user privacy and security with features like phone/email verification, strong password policies, two-factor authentication (2FA), and quick recovery options. All data is handled per our [Privacy Policy](#) and encrypted in transit/storage.
 
 Access these features via Profile > Account & Security in the app (available on iOS and Android).
 
-#### 1. Account Setup and Recovery Guide
+## 1. Account Setup and Recovery Guide
 
 **Creating a New Account**
 QuickBite requires a verified phone number or email for signup to prevent fraud and enable easy recovery.
@@ -40,7 +38,7 @@ If you forget your password or can't log in:
 - Add a recovery email/phone in Profile > Account Settings > Recovery Options.
 - For lost phone: Log in from another device first, then disable old 2FA and set up new.
 
-#### 2. Profile Management Guide
+## 2. Profile Management Guide
 
 Keep your profile up-to-date for seamless ordering and security.
 
@@ -66,7 +64,7 @@ Keep your profile up-to-date for seamless ordering and security.
 - All data (orders, preferences) permanently deleted; refunds/credits may be lost.
 - Why delete? If switching apps or privacy concerns—contact support for data export first.
 
-#### 3. Security Incident Response Guide
+## 3. Security Incident Response Guide
 
 QuickBite monitors for suspicious activity (e.g., logins from new devices/locations, unusual orders).
 
@@ -97,7 +95,7 @@ QuickBite monitors for suspicious activity (e.g., logins from new devices/locati
 - If confirmed breach: Reset credentials, issue credits if fraudulent orders occurred, notify you.
 - In severe cases: Permanent ban on abusive/fraudulent accounts.
 
-#### 4. Two-Factor Authentication (2FA) Setup and Management
+## 4. Two-Factor Authentication (2FA) Setup and Management
 
 2FA adds a second verification step (beyond password) for logins, password resets, high-value orders (>₹2000), or sensitive changes.
 
