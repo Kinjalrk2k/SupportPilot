@@ -3,15 +3,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # %%
-# from phoenix.otel import register
-# from openinference.instrumentation.langchain import LangChainInstrumentor
+from phoenix.otel import register
+from openinference.instrumentation.langchain import LangChainInstrumentor
 
-# # Initialize Phoenix Tracer (Defaults to sending traces to http://localhost:6006)
-# tracer_provider = register(
-#     project_name="support_pilot_agent"
-# )
-# # Auto-instrument all LangChain and LangGraph calls
-# LangChainInstrumentor().instrument(tracer_provider=tracer_provider)
+# Initialize Phoenix Tracer (Defaults to sending traces to http://localhost:6006)
+tracer_provider = register(
+    project_name="support_pilot_agent"
+)
+# Auto-instrument all LangChain and LangGraph calls
+LangChainInstrumentor().instrument(tracer_provider=tracer_provider)
 
 # %%
 from langchain.chat_models import init_chat_model
@@ -24,17 +24,32 @@ from langgraph.graph.message import add_messages
 from typing import TypedDict, Annotated
 
 class AgentState(TypedDict):
+    # for conversation
     messages: Annotated[list[BaseMessage], add_messages]
 
+    # conversational summary
     summary: str
 
+    # data extration
     category: str
     priority: str
     issue_analyzer_confidence: float
     sentiment: float
 
+    # router flags
     requires_knowledge_search: bool
+    requires_order_check: bool
+    requires_escalation: bool
+    
+    # additional context
     retrieved_context: str
+    order_context: str
+
+    # pre-injected
+    order_id: str
+
+    # lockout on escalation
+    is_escalated: bool
 
 # %%
 from pydantic import BaseModel, Field, model_validator
@@ -64,6 +79,16 @@ class IssueExtractionResult(BaseModel):
     requires_knowledge_search: bool = Field(
         default=False, 
         description="Set to True ONLY if the user is asking a factual question about policies, pricing, or features that requires looking up documentation. Set to False for greetings, complaints, or simple conversational replies."
+    )
+    
+    requires_order_check: bool = Field(
+        default=False, 
+        description="Set to True ONLY if the user is asking about the status, location, delivery date, or details of their specific order or package. Set to False for general policy questions, greetings, or complaints."
+    )
+
+    requires_escalation: bool = Field(
+        default=False,
+        description="Set to True ONLY if the user explicitly asks to speak to a human, live agent, or manager, OR if their input is extremely abusive and furious."
     )
 
     # The Dynamic Validator
@@ -152,6 +177,8 @@ def analyze_issue(state: AgentState):
         "issue_analyzer_confidence": result.confidence,
         "sentiment": result.sentiment_score,
         "requires_knowledge_search": result.requires_knowledge_search,
+        "requires_order_check": result.requires_order_check,
+        "requires_escalation": result.requires_escalation,
     }
 
 
@@ -173,34 +200,10 @@ def get_sentiment(sentiment_score: float) -> Literal["Angry", "Frustrated", "Neu
         return "Happy"
 
 # %%
-from langchain_core.messages import SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import SystemMessage
 
-# Template 1: Strict Librarian (RAG Mode)
-RAG_SYSTEM_PROMPT = """You are a world-class, empathetic customer support agent.
-
-PAST CONTEXT SUMMARY:
-{summary}
-
-CURRENT TICKET CONTEXT:
-- Issue Category: {category}
-- Priority Level: {priority}
-- User's Current Emotion: {sentiment}
-
-COMPANY KNOWLEDGE BASE:
-{context}
-
-YOUR INSTRUCTIONS:
-1. Answer the user's question using ONLY the provided Company Knowledge Base.
-2. If the answer is not in the Knowledge Base, politely say you don't have that information. Do NOT guess.
-3. Adjust your tone perfectly to match their '{sentiment}' emotion. 
-   - If they are 'Angry' or 'Frustrated', be deeply apologetic, highly professional, and concise. Get straight to the point.
-   - If they are 'Neutral', 'Satisfied' or 'Happy', be warm, conversational, and friendly.
-4. IMPORTANT: Do NOT explicitly mention the category, priority or emotion. Just naturally embody the correct tone.
-"""
-
-# Template 2: Friendly Chatbot (Conversational Mode)
-CONVERSATIONAL_SYSTEM_PROMPT = """You are a world-class, empathetic customer support agent.
+REPLY_SYSTEM_PROMPT = """You are a world-class, empathetic customer support agent.
 
 PAST CONTEXT SUMMARY:
 {summary}
@@ -210,44 +213,64 @@ CURRENT TICKET CONTEXT:
 - Priority Level: {priority}
 - User's Current Emotion: {sentiment}
 
+{system_data_block}
+
 YOUR INSTRUCTIONS:
-1. Acknowledge their issue directly based on the '{category}'.
-2. Provide helpful, conversational support without inventing company policies.
-3. Adjust your tone perfectly to match their '{sentiment}' emotion. 
-   - If they are 'Angry' or 'Frustrated', be deeply apologetic, highly professional, and concise. Get straight to the point.
-   - If they are 'Neutral', 'Satisfied' or 'Happy', be warm, conversational, and friendly.
-4. IMPORTANT: Do NOT explicitly mention the category, priority or emotion. Just naturally embody the correct tone.
+{dynamic_instructions}
+- Adjust your tone perfectly to match their '{sentiment}' emotion. 
+  (If they are 'Angry' or 'Frustrated', be deeply apologetic and concise. If they are 'Neutral' or 'Happy', be warm and conversational).
+- IMPORTANT: Do NOT explicitly mention the category, priority or emotion. Just naturally embody the correct tone.
 """
 
 def generate_reply(state: AgentState):
-   default_result = IssueExtractionResult()
-   category = state.get("category", default_result.category)
-   priority = state.get("priority", default_result.priority)
-   sentiment_score = state.get("sentiment_score", default_result.sentiment_score)
-   sentiment = get_sentiment(sentiment_score)
-   summary = state.get('summary', 'No prior context.')
-   context = state.get("retrieved_context", "")
-   requires_search = state.get("requires_knowledge_search", False)
-
-   selected_template = RAG_SYSTEM_PROMPT if requires_search else CONVERSATIONAL_SYSTEM_PROMPT
-
-   prompt = ChatPromptTemplate.from_messages([
-       ("system", selected_template),
-       MessagesPlaceholder(variable_name="messages")
-   ])
-
-   reply_chain = prompt | llm
+    default_result = IssueExtractionResult()
+    category = state.get("category", default_result.category)
+    priority = state.get("priority", default_result.priority)
+    sentiment_score = state.get("sentiment_score", default_result.sentiment_score)
+    sentiment = get_sentiment(sentiment_score)
+    summary = state.get('summary', 'No prior context.')
     
-   response = reply_chain.invoke({
+    requires_search = state.get("requires_knowledge_search", False)
+    requires_order = state.get("requires_order_check", False)
+    context = state.get("retrieved_context", "")
+    order_context = state.get("order_context", "")
+    system_data_block = ""
+    dynamic_instructions = ""
+
+   # for RAG
+    if requires_search and context:
+        system_data_block += f"COMPANY KNOWLEDGE BASE:\n{context}\n\n"
+        dynamic_instructions += "- Answer the user's factual questions using ONLY the provided Company Knowledge Base. Do NOT guess.\n"
+
+   # for Order Data
+    if requires_order and order_context:
+        system_data_block += f"LIVE ORDER DATA:\n{order_context}\n\n"
+        dynamic_instructions += "- Use the LIVE ORDER DATA to inform the user about their specific order status.\n"
+        dynamic_instructions += "- IMPORTANT: You already securely authenticated the user. The LIVE ORDER DATA belongs to them. Do NOT ask for their name, email, or order number. Answer them immediately.\n"
+   
+   # Fallback
+    if not requires_search and not requires_order:
+        dynamic_instructions += "- Acknowledge their issue directly and provide helpful, conversational support.\n"
+   
+   
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", REPLY_SYSTEM_PROMPT),
+        MessagesPlaceholder(variable_name="messages")
+    ])
+   
+    reply_chain = prompt | llm
+   
+    response = reply_chain.invoke({
        "summary": summary,
        "category": category,
        "priority": priority,
        "sentiment": sentiment,
-       "context": context,
+       "system_data_block": system_data_block.strip(),
+       "dynamic_instructions": dynamic_instructions.strip(),
        "messages": state["messages"]
    })
-    
-   return {"messages": [response]}
+   
+    return {"messages": [response]}
 
 # %%
 from langchain_core.messages import HumanMessage, RemoveMessage
@@ -287,7 +310,7 @@ def summarize_conversation(state: AgentState):
 # %%
 from langgraph.graph import END
 
-def should_summarize(state: AgentState):
+def route_to_summarize(state: AgentState):
     messages = state["messages"]
 
     # summarize only if messages are more than 6
@@ -341,10 +364,71 @@ def retrieve_knowledge(state: AgentState):
     return {"retrieved_context": retrieved_context}
 
 # %%
-def route_for_retrieve_knowledge(state: AgentState):
+def route_to_retrieve_knowledge(state: AgentState):
     if state.get("requires_knowledge_search", False):
         return "retrieve_knowledge"
     return "generate_reply"
+
+# %%
+import requests
+import json
+
+def fetch_order_data(state: AgentState):
+    order_id = state.get("order_id")
+
+    if not order_id:
+        return {"order_context": "No relevant order details found"}
+    
+    response = requests.get(f"http://127.0.0.1:8000/orders/{order_id}")
+    data = response.json()
+    return {"order_context": json.dumps(data)}
+
+# %%
+def route_to_fetch_order_data(state: AgentState):
+    if state.get("requires_order_check", False):
+        return "fetch_order_data"
+    return "buffer_fetch"
+
+# %%
+def buffer_fetch(state: AgentState):
+    return {}
+
+# %%
+from langchain_core.messages import AIMessage
+
+def escalate_to_human(state: AgentState):    
+    handoff_message = (
+        "I understand, and I want to make sure this gets resolved perfectly for you. "
+        "I am escalating this chat to a human support specialist right now. "
+        "They will review our conversation and be with you shortly."
+    )
+    
+    return {
+        "messages": [AIMessage(content=handoff_message)],
+        "is_escalated": True
+    }
+
+# %%
+def buffer_escalate(state: AgentState):
+    return {}
+
+# %%
+def route_to_escalate(state: AgentState):
+    if state.get("requires_escalation", False):
+        return "escalate_to_human"
+    return "buffer_escalate"
+
+# %%
+def already_escalated(state: AgentState):
+    reply = "Your ticket is currently assigned to a human agent. They will reply to you here as soon as they are available."
+    return {"messages": [AIMessage(content=reply)]}
+
+# %%
+def route_to_already_escalated(state: AgentState):
+    if state.get("is_escalated", False):
+        return "already_escalated"
+
+    return "analyze_issue"
 
 # %%
 from langgraph.graph import StateGraph, START, END
@@ -355,11 +439,40 @@ workflow.add_node("analyze_issue", analyze_issue)
 workflow.add_node("generate_reply", generate_reply)
 workflow.add_node("summarize_conversation", summarize_conversation)
 workflow.add_node("retrieve_knowledge", retrieve_knowledge)
+workflow.add_node("fetch_order_data", fetch_order_data)
+workflow.add_node("buffer_fetch", buffer_fetch)
+workflow.add_node("escalate_to_human", escalate_to_human)
+workflow.add_node("buffer_escalate", buffer_escalate)
+workflow.add_node("already_escalated", already_escalated)
 
-workflow.add_edge(START, "analyze_issue")
+workflow.add_conditional_edges(
+    START, 
+    route_to_already_escalated,
+    {
+        "already_escalated": "already_escalated",
+        "analyze_issue": "analyze_issue"
+    }
+)
 workflow.add_conditional_edges(
     "analyze_issue",
-    route_for_retrieve_knowledge,
+    route_to_escalate,
+    {
+        "escalate_to_human": "escalate_to_human",
+        "buffer_escalate": "buffer_escalate"
+    }
+)
+workflow.add_conditional_edges(
+    "buffer_escalate",
+    route_to_fetch_order_data,
+    {
+        "fetch_order_data": "fetch_order_data",
+        "buffer_fetch": "buffer_fetch"
+    }
+)
+workflow.add_edge("fetch_order_data", "buffer_fetch")
+workflow.add_conditional_edges(
+    "buffer_fetch",
+    route_to_retrieve_knowledge,
     {
         "retrieve_knowledge": "retrieve_knowledge",
         "generate_reply": "generate_reply"
@@ -368,13 +481,15 @@ workflow.add_conditional_edges(
 workflow.add_edge("retrieve_knowledge", "generate_reply")
 workflow.add_conditional_edges(
     "generate_reply", 
-    should_summarize,
+    route_to_summarize,
     {
         "summarize_conversation": "summarize_conversation",
         END: END,
     }
 )
 workflow.add_edge("summarize_conversation", END)
+workflow.add_edge("escalate_to_human", END)
+workflow.add_edge("already_escalated", END)
 
 graph = workflow.compile()
 
