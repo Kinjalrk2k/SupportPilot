@@ -33,18 +33,20 @@ class AgentState(TypedDict):
     issue_analyzer_confidence: float
     sentiment: float
 
+    requires_knowledge_search: bool
     retrieved_context: str
 
 # %%
 from pydantic import BaseModel, Field, model_validator
 from langchain_core.output_parsers import PydanticOutputParser
+from typing import Literal
 
 class IssueExtractionResult(BaseModel):
     category: str = Field(
         description="Categorize the issue: Billing, Technical, Login, or General.",
         default="General"
     )
-    priority: str = Field(
+    priority: Literal["Low", "Medium", "High", "Urgent"] = Field(
         description="Assess priority: Low, Medium, High, or Urgent.",
         default="Low"
     )
@@ -57,6 +59,11 @@ class IssueExtractionResult(BaseModel):
     sentiment_score: float = Field(
         description="A score from -1.0 (extremely negative/angry) to 1.0 (extremely positive/happy). 0.0 is neutral.",
         default=0.0
+    )
+
+    requires_knowledge_search: bool = Field(
+        default=False, 
+        description="Set to True ONLY if the user is asking a factual question about policies, pricing, or features that requires looking up documentation. Set to False for greetings, complaints, or simple conversational replies."
     )
 
     # The Dynamic Validator
@@ -132,7 +139,6 @@ def analyze_issue(state: AgentState):
     try:
         summary = state.get('summary', 'No prior context.')
         transcript = generate_transcript(state["messages"])
-        print("transcript", transcript)
         result = analyzer_chain.invoke({"summary": summary, "transcript": transcript})
         print(f"[analyze_issue] {result}")
         print(f"[analyze_issue] {type(result)}")
@@ -144,7 +150,8 @@ def analyze_issue(state: AgentState):
         "category": result.category,
         "priority": result.priority,
         "issue_analyzer_confidence": result.confidence,
-        "sentiment": result.sentiment_score
+        "sentiment": result.sentiment_score,
+        "requires_knowledge_search": result.requires_knowledge_search,
     }
 
 
@@ -167,36 +174,79 @@ def get_sentiment(sentiment_score: float) -> Literal["Angry", "Frustrated", "Neu
 
 # %%
 from langchain_core.messages import SystemMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+# Template 1: Strict Librarian (RAG Mode)
+RAG_SYSTEM_PROMPT = """You are a world-class, empathetic customer support agent.
+
+PAST CONTEXT SUMMARY:
+{summary}
+
+CURRENT TICKET CONTEXT:
+- Issue Category: {category}
+- Priority Level: {priority}
+- User's Current Emotion: {sentiment}
+
+COMPANY KNOWLEDGE BASE:
+{context}
+
+YOUR INSTRUCTIONS:
+1. Answer the user's question using ONLY the provided Company Knowledge Base.
+2. If the answer is not in the Knowledge Base, politely say you don't have that information. Do NOT guess.
+3. Adjust your tone perfectly to match their '{sentiment}' emotion. 
+   - If they are 'Angry' or 'Frustrated', be deeply apologetic, highly professional, and concise. Get straight to the point.
+   - If they are 'Neutral', 'Satisfied' or 'Happy', be warm, conversational, and friendly.
+4. IMPORTANT: Do NOT explicitly mention the category, priority or emotion. Just naturally embody the correct tone.
+"""
+
+# Template 2: Friendly Chatbot (Conversational Mode)
+CONVERSATIONAL_SYSTEM_PROMPT = """You are a world-class, empathetic customer support agent.
+
+PAST CONTEXT SUMMARY:
+{summary}
+
+CURRENT TICKET CONTEXT:
+- Issue Category: {category}
+- Priority Level: {priority}
+- User's Current Emotion: {sentiment}
+
+YOUR INSTRUCTIONS:
+1. Acknowledge their issue directly based on the '{category}'.
+2. Provide helpful, conversational support without inventing company policies.
+3. Adjust your tone perfectly to match their '{sentiment}' emotion. 
+   - If they are 'Angry' or 'Frustrated', be deeply apologetic, highly professional, and concise. Get straight to the point.
+   - If they are 'Neutral', 'Satisfied' or 'Happy', be warm, conversational, and friendly.
+4. IMPORTANT: Do NOT explicitly mention the category, priority or emotion. Just naturally embody the correct tone.
+"""
 
 def generate_reply(state: AgentState):
-   default_issue_analize_result = IssueExtractionResult()
-   category = state.get("category", default_issue_analize_result.category)
-   priority = state.get("priority", default_issue_analize_result.priority)
-   sentiment_score = state.get("sentiment_score", default_issue_analize_result.sentiment_score)
+   default_result = IssueExtractionResult()
+   category = state.get("category", default_result.category)
+   priority = state.get("priority", default_result.priority)
+   sentiment_score = state.get("sentiment_score", default_result.sentiment_score)
    sentiment = get_sentiment(sentiment_score)
    summary = state.get('summary', 'No prior context.')
+   context = state.get("retrieved_context", "")
+   requires_search = state.get("requires_knowledge_search", False)
 
-   sys_prompt = f"""You are a world-class, empathetic customer support agent.
-   
-   PAST CONTEXT SUMMARY:
-   {summary}
+   selected_template = RAG_SYSTEM_PROMPT if requires_search else CONVERSATIONAL_SYSTEM_PROMPT
 
-   CURRENT TICKET CONTEXT:
-   - Issue Category: {category}
-   - Priority Level: {priority}
-   - User's Current Emotion: {sentiment}
+   prompt = ChatPromptTemplate.from_messages([
+       ("system", selected_template),
+       MessagesPlaceholder(variable_name="messages")
+   ])
+
+   reply_chain = prompt | llm
     
-   YOUR INSTRUCTIONS:
-   1. Acknowledge their issue directly based on the '{category}'.
-   2. Adjust your tone perfectly to match their '{sentiment}' emotion. 
-      - If they are 'Angry' or 'Frustrated', be deeply apologetic, highly professional, and concise. Get straight to the point.
-      - If they are 'Neutral' 'Satisfied' or 'Happy', be warm, conversational, and friendly.
-   3. IMPORTANT: Do NOT explicitly mention the category, priority or emotion. Just naturally embody the correct tone.
-   """
-
-   messages = [SystemMessage(content=sys_prompt)] + state["messages"]
-
-   response = llm.invoke(messages)
+   response = reply_chain.invoke({
+       "summary": summary,
+       "category": category,
+       "priority": priority,
+       "sentiment": sentiment,
+       "context": context,
+       "messages": state["messages"]
+   })
+    
    return {"messages": [response]}
 
 # %%
@@ -211,7 +261,7 @@ def summarize_conversation(state: AgentState):
         NEW MESSAGES TO SUMMARIZE:
         {transcript}
         """,
-        input_variables=["summary", "messages"]
+        input_variables=["summary", "transcript"]
     )
 
     # summarize everything except the last two
@@ -258,11 +308,29 @@ vector_db = Chroma(
 
 # %%
 def retrieve_knowledge(state: AgentState):
-    latest_message_content = extract_message_content(state["messages"][-1])
-    print(type(latest_message_content))
-    print(latest_message_content)
-    results = vector_db.similarity_search(latest_message_content, k=3)
+    # rewrite query for searching
+    prompt = PromptTemplate(
+        template="""Given the following conversation history, rewrite the user's latest message into a standalone, highly specific search query for a database. 
+        If the user uses pronouns like "it" or "that", replace them with the actual subject from the history.
+    
+        HISTORY:
+        {transcript}
+        """,
+        input_variables=["transcript"]
+    )
 
+
+    messages = state["messages"]
+    recent_messages = messages[-4:] # last four messages
+    transcript = generate_transcript(recent_messages)
+    
+    rewrite_chain = prompt | llm
+    response = rewrite_chain.invoke({
+        "transcript": transcript
+    })
+    new_query = extract_message_content(response)
+
+    results = vector_db.similarity_search(new_query, k=3)
     retrieved_context = "No relevant policies found in the database."
     if results:
         retrieved_context = ""
@@ -271,6 +339,12 @@ def retrieve_knowledge(state: AgentState):
             retrieved_context += f"{doc.page_content}\n\n"
 
     return {"retrieved_context": retrieved_context}
+
+# %%
+def route_for_retrieve_knowledge(state: AgentState):
+    if state.get("requires_knowledge_search", False):
+        return "retrieve_knowledge"
+    return "generate_reply"
 
 # %%
 from langgraph.graph import StateGraph, START, END
@@ -283,7 +357,14 @@ workflow.add_node("summarize_conversation", summarize_conversation)
 workflow.add_node("retrieve_knowledge", retrieve_knowledge)
 
 workflow.add_edge(START, "analyze_issue")
-workflow.add_edge("analyze_issue", "retrieve_knowledge")
+workflow.add_conditional_edges(
+    "analyze_issue",
+    route_for_retrieve_knowledge,
+    {
+        "retrieve_knowledge": "retrieve_knowledge",
+        "generate_reply": "generate_reply"
+    }
+)
 workflow.add_edge("retrieve_knowledge", "generate_reply")
 workflow.add_conditional_edges(
     "generate_reply", 
