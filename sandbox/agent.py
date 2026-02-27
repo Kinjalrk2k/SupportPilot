@@ -3,6 +3,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # %%
+from phoenix.otel import register
+from openinference.instrumentation.langchain import LangChainInstrumentor
+
+# Initialize Phoenix Tracer (Defaults to sending traces to http://localhost:6006)
+tracer_provider = register(
+    project_name="support_pilot_agent"
+)
+# Auto-instrument all LangChain and LangGraph calls
+LangChainInstrumentor().instrument(tracer_provider=tracer_provider)
+
+# %%
 from langchain.chat_models import init_chat_model
 llm = init_chat_model(model="llama-3.1-8b-instant", model_provider="groq")
 # llm = init_chat_model(model="gemma-3-27b-it", model_provider="google_genai")
