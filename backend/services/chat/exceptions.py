@@ -1,2 +1,0 @@
-class ConversationNotFoundExpection(Exception):
-    pass

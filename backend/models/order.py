@@ -1,13 +1,13 @@
 from models.base import Base
 from models.mixins.timestamp_mixin import TimestampMixin
 
-from sqlalchemy import String, Float, Enum, JSON
+from sqlalchemy import String, Float, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID, ENUM
 import uuid
 from models.enums.order_status import OrderStatus
 from models.enums.payment_status import PaymentStatus
-from typing import TypedDict
+from typing_extensions import TypedDict
 
 
 class OrderItem(TypedDict):
@@ -34,11 +34,11 @@ class Order(Base, TimestampMixin):
     total_amount: Mapped[float] = mapped_column(Float, nullable=False)
 
     order_status: Mapped[OrderStatus] = mapped_column(
-        ENUM(OrderStatus, name="message_role_enum", create_type=False),
+        ENUM(OrderStatus, name="order_status_enum", create_type=True),
         nullable=False,
     )
 
     payment_status: Mapped[PaymentStatus] = mapped_column(
-        ENUM(PaymentStatus, name="message_role_enum", create_type=False),
+        ENUM(PaymentStatus, name="payment_status_enum", create_type=True),
         nullable=False,
     )
