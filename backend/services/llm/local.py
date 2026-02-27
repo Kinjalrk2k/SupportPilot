@@ -10,7 +10,6 @@ from time import sleep
 import os
 from langchain_openai import ChatOpenAI
 
-
 load_dotenv()
 
 
@@ -20,8 +19,7 @@ class LocalLLMService(BaseLLMService):
 
     def __init__(self):
         self.model = ChatOpenAI(
-            base_url=os.getenv("LOCAL_OPENAI_URL"),
-            api_key="not-needed"
+            base_url=os.getenv("LOCAL_OPENAI_URL"), api_key="not-needed"
         )
         self.agent = create_agent(model=self.model)
 
@@ -30,7 +28,9 @@ class LocalLLMService(BaseLLMService):
         return response["messages"][-1]
 
     def stream_reply(self, messages: list[AnyMessage]) -> Iterable[str]:
-        for token, _ in self.agent.stream({"messages": messages}, stream_mode="messages"):
+        for token, _ in self.agent.stream(
+            {"messages": messages}, stream_mode="messages"
+        ):
             if token.content:
                 yield token.content
 

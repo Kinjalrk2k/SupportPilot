@@ -1,6 +1,8 @@
 from models.base import Base
 
 from models.enums.message_role import MessageRole
+from models.enums.order_status import OrderStatus
+from models.enums.payment_status import PaymentStatus
 
 from models.mixins.timestamp_mixin import TimestampMixin
 

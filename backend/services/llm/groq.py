@@ -26,7 +26,9 @@ class GroqLLMService(BaseLLMService):
         return response["messages"][-1]
 
     def stream_reply(self, messages: list[AnyMessage]) -> Iterable[str]:
-        for token, _ in self.agent.stream({"messages": messages}, stream_mode="messages"):
+        for token, _ in self.agent.stream(
+            {"messages": messages}, stream_mode="messages"
+        ):
             if token.content:
                 yield token.content
 
