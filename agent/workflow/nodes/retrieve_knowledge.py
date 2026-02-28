@@ -1,7 +1,7 @@
 from langchain_core.messages import HumanMessage, RemoveMessage
 from workflow.state import AgentState
 from langchain_core.prompts import PromptTemplate
-from workflow.models import IssueExtractionResult, issue_extraction_parser
+from workflow.dtos import IssueExtractionResult, issue_extraction_parser
 from workflow.utils import generate_transcript, extract_message_content, get_sentiment
 from workflow.llm import llm
 from workflow.vector_db import vector_db
