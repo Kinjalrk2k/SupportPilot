@@ -8,6 +8,7 @@ import os
 from pydantic import BaseModel
 from producer.kafka import publish_to_kafka, TOPIC_MESSAGES, TOPIC_CATEGORIZATION
 from datetime import datetime, timezone
+from workflow.tracing import ENABLE_TRACING
 
 load_dotenv()
 REDIS_URI = os.getenv("REDIS_URI")
@@ -30,7 +31,14 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
         )
 
         agent = workflow.compile(checkpointer=checkpointer)
-        config = {"configurable": {"thread_id": thread_id}}
+        config = {
+            "configurable": {"thread_id": thread_id},
+            # for tracing
+            "metadata": {
+                "session_id": thread_id,
+                "order_id": order_id
+            },
+        }
         chunk_id = f"chatcmpl-{int(time.time())}"
 
         # redis passes the other messages

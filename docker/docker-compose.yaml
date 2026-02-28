@@ -83,6 +83,14 @@ services:
     depends_on:
       - kafka
 
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    container_name: support_pilot_tracing_phoenix
+    restart: unless-stopped
+    ports:
+      - "6006:6006" # The Phoenix UI and HTTP collector
+      - "4317:4317" # The OpenTelemetry gRPC collector
+
 volumes:
   postgres_data:
 

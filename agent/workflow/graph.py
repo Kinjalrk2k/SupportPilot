@@ -17,13 +17,6 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-ENABLE_TRACING = str_to_bool(os.getenv("ENABLE_TRACING", "false"))
-
-if ENABLE_TRACING:
-    # Initialize Phoenix Tracer (Defaults to sending traces to http://localhost:6006)
-    tracer_provider = register(project_name="support_pilot_agent")
-    # Auto-instrument all LangChain and LangGraph calls
-    LangChainInstrumentor().instrument(tracer_provider=tracer_provider)
 
 
 workflow = StateGraph(AgentState)
