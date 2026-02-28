@@ -4,7 +4,7 @@ from typing import Literal
 
 
 class IssueExtractionResult(BaseModel):
-    category: str = Field(
+    category: Literal["Billing", "Technical", "Login", "General"] = Field(
         description="Categorize the issue: Billing, Technical, Login, or General.",
         default="General",
     )

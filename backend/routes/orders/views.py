@@ -8,7 +8,6 @@ from .schemas import OrderCreate, OrderUpdate, OrderResponse, PaginatedOrderResp
 from config.db import get_db_session
 from math import ceil
 
-
 router = APIRouter()
 
 
@@ -33,12 +32,7 @@ def get_orders(
 
     offset = (page - 1) * page_size
 
-    orders = (
-        db.query(Order)
-        .offset(offset)
-        .limit(page_size)
-        .all()
-    )
+    orders = db.query(Order).offset(offset).limit(page_size).all()
 
     total_pages = ceil(total / page_size) if total else 1
 

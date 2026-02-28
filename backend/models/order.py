@@ -5,8 +5,7 @@ from sqlalchemy import String, Float, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID, ENUM
 import uuid
-from models.enums.order_status import OrderStatus
-from models.enums.payment_status import PaymentStatus
+from models.enums.order import OrderStatus, PaymentStatus
 from typing_extensions import TypedDict
 
 
@@ -42,3 +41,6 @@ class Order(Base, TimestampMixin):
         ENUM(PaymentStatus, name="payment_status_enum", create_type=True),
         nullable=False,
     )
+
+    # back populates
+    tickets: Mapped[list["Ticket"]] = relationship("Ticket", back_populates="order")

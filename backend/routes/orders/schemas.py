@@ -1,8 +1,7 @@
 from pydantic import BaseModel, Field
 from uuid import UUID
 from typing import List, Optional
-from models.enums.order_status import OrderStatus
-from models.enums.payment_status import PaymentStatus
+from models.enums.order import OrderStatus, PaymentStatus
 from datetime import datetime
 
 
