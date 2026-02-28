@@ -18,6 +18,16 @@ services:
     networks:
       - support_pilot_network
 
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: support_pilot_chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+
 volumes:
   postgres_data:
 
