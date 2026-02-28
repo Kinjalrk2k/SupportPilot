@@ -28,6 +28,18 @@ services:
     environment:
       - IS_PERSISTENT=TRUE
 
+  redis:
+    image: redis:alpine
+    container_name: support_pilot_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      # This ensures your chat history survives if you restart the Docker container
+      - ./redis_data:/data
+    # appendonly ensures every write is saved to disk immediately
+    command: redis-server --appendonly yes
+
 volumes:
   postgres_data:
 
