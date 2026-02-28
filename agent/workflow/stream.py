@@ -6,6 +6,7 @@ import json
 from dotenv import load_dotenv
 import os
 from pydantic import BaseModel
+from producer.kafka import publish_to_kafka, TOPIC_MESSAGES, TOPIC_CATEGORIZATION
 
 load_dotenv()
 REDIS_URI = os.getenv("REDIS_URI")
@@ -15,16 +16,24 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
     async with AsyncRedisSaver.from_conn_string(REDIS_URI) as checkpointer:
         await checkpointer.setup()  # first time setting up
 
-        agent = workflow.compile(checkpointer=checkpointer)
+        # produce user message
+        publish_to_kafka(
+            topic=TOPIC_MESSAGES,
+            key=thread_id,  # for partitioning
+            payload={"thread_id": thread_id, "role": "user", "content": user_input},
+        )
 
+        agent = workflow.compile(checkpointer=checkpointer)
         config = {"configurable": {"thread_id": thread_id}}
         chunk_id = f"chatcmpl-{int(time.time())}"
 
         # redis passes the other messages
         payload = {"messages": [HumanMessage(content=user_input)], "order_id": order_id}
 
+        full_ai_response = ""
         async for event in agent.astream_events(payload, config=config, version="v2"):
             kind = event["event"]
+            node_name = event.get("name")
 
             if (
                 kind == "on_chat_model_stream"
@@ -32,6 +41,7 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
             ):
                 token = event["data"]["chunk"].content
                 if token:
+                    full_ai_response += token  # collecting response
                     chunk = {
                         "id": chunk_id,
                         "object": "chat.completion.chunk",
@@ -53,6 +63,27 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
                         "choices": [{"delta": {"content": content}}],
                     }
                     yield f"data: {json.dumps(chunk)}\n\n"
+
+            # for categories
+            elif kind == "on_chain_end" and node_name == "analyze_issue":
+                state = event["data"].get("output", {})
+                state["order_id"] = order_id
+
+                # produce categorizations
+                publish_to_kafka(
+                    topic=TOPIC_CATEGORIZATION, key=order_id, payload=state
+                )
+
+        # produce ai message
+        publish_to_kafka(
+            topic=TOPIC_MESSAGES,
+            key=thread_id,
+            payload={
+                "thread_id": thread_id,
+                "role": "assistant",
+                "content": full_ai_response,
+            },
+        )
 
         # complete SSE
         yield "data: [DONE]\n\n"

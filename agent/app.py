@@ -6,6 +6,7 @@ import os
 from pydantic import BaseModel
 from schemas import ChatRequest
 from workflow.stream import stream_agent_response
+from workflow.history import get_agent_history
 
 load_dotenv()
 PORT = os.getenv("PORT")
@@ -20,6 +21,11 @@ async def chat_stream(request: ChatRequest):
         stream_agent_response(latest_user_message, request.thread_id, request.order_id),
         media_type="text/event-stream",
     )
+
+
+@app.get("/v1/chat/{thread_id}/history")
+async def get_chat_history(thread_id: str):
+    return await get_agent_history(thread_id)
 
 
 if __name__ == "__main__":
