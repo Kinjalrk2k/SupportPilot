@@ -387,7 +387,7 @@ def fetch_order_data(state: AgentState):
     if not order_id:
         return {"order_context": "No relevant order details found"}
     
-    response = requests.get(f"http://127.0.0.1:5000/orders/{order_id}")
+    response = requests.get(f"http://127.0.0.1:5001/orders/{order_id}")
     data = response.json()
     return {"order_context": json.dumps(data)}
 
