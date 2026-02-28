@@ -146,6 +146,7 @@ def analyze_issue(state: AgentState):
         template="""
             You are a strict data extraction algorithm."
             Analyze the messages and extract the exact fields requested.
+            Focus on the LAST MESSAGE to understand about requires_knowledge_search and requires_order_check flags.
                   
             {format_instructions}
 
@@ -154,8 +155,11 @@ def analyze_issue(state: AgentState):
 
             RECENT TRANSCRIPT:
             {transcript}
+
+            LAST MESSAGE:
+            {latest_message}
         """,
-        input_variables=["summary", "transcript"],
+        input_variables=["summary", "transcript", "latest_message"],
         partial_variables={"format_instructions": issue_extraction_parser.get_format_instructions()}
     )
 
@@ -164,7 +168,8 @@ def analyze_issue(state: AgentState):
     try:
         summary = state.get('summary', 'No prior context.')
         transcript = generate_transcript(state["messages"])
-        result = analyzer_chain.invoke({"summary": summary, "transcript": transcript})
+        latest_message = extract_message_content(state["messages"][-1])
+        result = analyzer_chain.invoke({"summary": summary, "transcript": transcript, "latest_message": latest_message})
         print(f"[analyze_issue] {result}")
         print(f"[analyze_issue] {type(result)}")
     except Exception as e:
@@ -179,6 +184,9 @@ def analyze_issue(state: AgentState):
         "requires_knowledge_search": result.requires_knowledge_search,
         "requires_order_check": result.requires_order_check,
         "requires_escalation": result.requires_escalation,
+        # empty the contexts
+        "retrieved_context": "",
+        "order_context": ""
     }
 
 
@@ -310,7 +318,7 @@ def summarize_conversation(state: AgentState):
 # %%
 from langgraph.graph import END
 
-def route_to_summarize(state: AgentState):
+def should_summarize(state: AgentState):
     messages = state["messages"]
 
     # summarize only if messages are more than 6
@@ -379,7 +387,7 @@ def fetch_order_data(state: AgentState):
     if not order_id:
         return {"order_context": "No relevant order details found"}
     
-    response = requests.get(f"http://127.0.0.1:8000/orders/{order_id}")
+    response = requests.get(f"http://127.0.0.1:5000/orders/{order_id}")
     data = response.json()
     return {"order_context": json.dumps(data)}
 
@@ -431,65 +439,139 @@ def route_to_already_escalated(state: AgentState):
     return "analyze_issue"
 
 # %%
+def router(state: AgentState):
+    if state.get("is_escalated", False):
+        return "already_escalated"
+    
+    if state.get("requires_escalation", False):
+        return "escalate_to_human"
+    
+    if state.get("requires_knowledge_search", False) and not state.get("retrieved_context"):
+        return "retrieve_knowledge"
+    
+    if state.get("requires_order_check", False) and not state.get("order_context"):
+        return "fetch_order_data"
+    
+    return "generate_reply"
+
+# %%
 from langgraph.graph import StateGraph, START, END
 
 workflow = StateGraph(AgentState)
+
+# workflow.add_node("analyze_issue", analyze_issue)
+# workflow.add_node("generate_reply", generate_reply)
+# workflow.add_node("summarize_conversation", summarize_conversation)
+# workflow.add_node("retrieve_knowledge", retrieve_knowledge)
+# workflow.add_node("fetch_order_data", fetch_order_data)
+# workflow.add_node("buffer_fetch", buffer_fetch)
+# workflow.add_node("escalate_to_human", escalate_to_human)
+# workflow.add_node("buffer_escalate", buffer_escalate)
+# workflow.add_node("already_escalated", already_escalated)
+
+# workflow.add_conditional_edges(
+#     START, 
+#     route_to_already_escalated,
+#     {
+#         "already_escalated": "already_escalated",
+#         "analyze_issue": "analyze_issue"
+#     }
+# )
+# workflow.add_conditional_edges(
+#     "analyze_issue",
+#     route_to_escalate,
+#     {
+#         "escalate_to_human": "escalate_to_human",
+#         "buffer_escalate": "buffer_escalate"
+#     }
+# )
+# workflow.add_conditional_edges(
+#     "buffer_escalate",
+#     route_to_fetch_order_data,
+#     {
+#         "fetch_order_data": "fetch_order_data",
+#         "buffer_fetch": "buffer_fetch"
+#     }
+# )
+# workflow.add_edge("fetch_order_data", "buffer_fetch")
+# workflow.add_conditional_edges(
+#     "buffer_fetch",
+#     route_to_retrieve_knowledge,
+#     {
+#         "retrieve_knowledge": "retrieve_knowledge",
+#         "generate_reply": "generate_reply"
+#     }
+# )
+# workflow.add_edge("retrieve_knowledge", "generate_reply")
+# workflow.add_conditional_edges(
+#     "generate_reply", 
+#     route_to_summarize,
+#     {
+#         "summarize_conversation": "summarize_conversation",
+#         END: END,
+#     }
+# )
+# workflow.add_edge("summarize_conversation", END)
+# workflow.add_edge("escalate_to_human", END)
+# workflow.add_edge("already_escalated", END)
+
+# graph = workflow.compile()
 
 workflow.add_node("analyze_issue", analyze_issue)
 workflow.add_node("generate_reply", generate_reply)
 workflow.add_node("summarize_conversation", summarize_conversation)
 workflow.add_node("retrieve_knowledge", retrieve_knowledge)
 workflow.add_node("fetch_order_data", fetch_order_data)
-workflow.add_node("buffer_fetch", buffer_fetch)
 workflow.add_node("escalate_to_human", escalate_to_human)
-workflow.add_node("buffer_escalate", buffer_escalate)
 workflow.add_node("already_escalated", already_escalated)
 
-workflow.add_conditional_edges(
-    START, 
-    route_to_already_escalated,
-    {
-        "already_escalated": "already_escalated",
-        "analyze_issue": "analyze_issue"
-    }
-)
+workflow.add_edge(START, "analyze_issue")
+
+# main router
 workflow.add_conditional_edges(
     "analyze_issue",
-    route_to_escalate,
+    router,
     {
+        "already_escalated": "already_escalated",
         "escalate_to_human": "escalate_to_human",
-        "buffer_escalate": "buffer_escalate"
+        "retrieve_knowledge": "retrieve_knowledge",
+        "fetch_order_data": "fetch_order_data",
+        "generate_reply": "generate_reply",
     }
 )
+
+# workers
+workflow.add_edge("escalate_to_human", END)
+workflow.add_edge("already_escalated", END)
+
 workflow.add_conditional_edges(
-    "buffer_escalate",
-    route_to_fetch_order_data,
+    "retrieve_knowledge",
+    router,
     {
         "fetch_order_data": "fetch_order_data",
-        "buffer_fetch": "buffer_fetch"
+        "generate_reply": "generate_reply",
     }
 )
-workflow.add_edge("fetch_order_data", "buffer_fetch")
+
 workflow.add_conditional_edges(
-    "buffer_fetch",
-    route_to_retrieve_knowledge,
+    "fetch_order_data",
+    router,
     {
         "retrieve_knowledge": "retrieve_knowledge",
-        "generate_reply": "generate_reply"
+        "generate_reply": "generate_reply",
     }
 )
-workflow.add_edge("retrieve_knowledge", "generate_reply")
+
 workflow.add_conditional_edges(
     "generate_reply", 
-    route_to_summarize,
+    should_summarize,
     {
         "summarize_conversation": "summarize_conversation",
         END: END,
     }
 )
+
 workflow.add_edge("summarize_conversation", END)
-workflow.add_edge("escalate_to_human", END)
-workflow.add_edge("already_escalated", END)
 
 graph = workflow.compile()
 
