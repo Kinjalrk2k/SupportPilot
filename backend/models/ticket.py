@@ -25,7 +25,7 @@ class Ticket(Base, TimestampMixin):
 
     priority: Mapped[TicketPriority] = mapped_column(
         ENUM(TicketPriority, name="ticket_priority_enum", create_type=True),
-        nullable=False,
+        nullable=True,
     )
 
     status: Mapped[TicketStatus] = mapped_column(
