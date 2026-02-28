@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import os
 from pydantic import BaseModel
 from producer.kafka import publish_to_kafka, TOPIC_MESSAGES, TOPIC_CATEGORIZATION
+from datetime import datetime, timezone
 
 load_dotenv()
 REDIS_URI = os.getenv("REDIS_URI")
@@ -20,7 +21,12 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
         publish_to_kafka(
             topic=TOPIC_MESSAGES,
             key=thread_id,  # for partitioning
-            payload={"thread_id": thread_id, "role": "user", "content": user_input},
+            payload={
+                "thread_id": thread_id,
+                "role": "user",
+                "content": user_input,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            },
         )
 
         agent = workflow.compile(checkpointer=checkpointer)
@@ -82,6 +88,7 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
                 "thread_id": thread_id,
                 "role": "assistant",
                 "content": full_ai_response,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             },
         )
 
