@@ -10,6 +10,7 @@ import uvicorn
 from routes.docs.views import router as docs_router
 from routes.documents.views import router as documents_router
 from routes.tickets.views import router as tickets_router
+from routes.messages.views import router as messages_router
 
 load_dotenv()
 PORT = os.getenv("PORT")
@@ -31,6 +32,7 @@ app.include_router(docs_router, prefix="/docs", tags=["docs"])
 app.include_router(orders_router, prefix="/orders", tags=["orders"])
 app.include_router(documents_router, prefix="/documents", tags=["documents"])
 app.include_router(tickets_router, prefix="/tickets", tags=["tickets"])
+app.include_router(messages_router, prefix="/messages", tags=["messages"])
 
 app.openapi = custom_openapi(app)
 
