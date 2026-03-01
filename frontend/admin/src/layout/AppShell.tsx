@@ -9,6 +9,9 @@ import {
   SideNavigation,
 } from "@cloudscape-design/components";
 import { useState, type JSX } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "../app/store";
+import { removeFlash } from "../app/flashbarSlice";
 
 export interface AppShellProps {
   children: JSX.Element;
@@ -19,17 +22,12 @@ function AppShell(props: AppShellProps) {
 
   const [toolsOpen, setToolsOpen] = useState<boolean>(false);
   const [navigationOpen, setNavigationOpen] = useState<boolean>(true);
+  const layout = useSelector((state: RootState) => state.layout);
+  const flashbarItems = useSelector((state: RootState) => state.flashbar.items);
+  const dispatch = useDispatch();
 
   return (
     <AppLayout
-      breadcrumbs={
-        <BreadcrumbGroup
-          items={[
-            { text: "Home", href: "#" },
-            { text: "Service", href: "#" },
-          ]}
-        />
-      }
       navigationOpen={navigationOpen}
       onNavigationChange={(e) => setNavigationOpen(e.detail.open)}
       navigation={
@@ -38,29 +36,30 @@ function AppShell(props: AppShellProps) {
             href: "/",
             text: "SupportPilot",
           }}
-          items={[{ type: "link", text: `Page #1`, href: `#` }]}
+          items={[
+            { type: "link", text: `Orders`, href: `/orders` },
+            { type: "link", text: `Tickets`, href: `/tickets` },
+            { type: "link", text: `Documents`, href: `/documents` },
+          ]}
         />
       }
       notifications={
         <Flashbar
-          items={[
-            {
-              type: "info",
-              dismissible: true,
-              content: "This is an info flash message.",
-              id: "message_1",
-            },
-          ]}
+          items={flashbarItems.map((item) => ({
+            ...item,
+            onDismiss: () => dispatch(removeFlash(item.id)),
+          }))}
         />
       }
       toolsOpen={toolsOpen}
       onToolsChange={(e) => setToolsOpen(e.detail.open)}
       tools={<HelpPanel header={<h2>Overview</h2>}>Help content</HelpPanel>}
+      breadcrumbs={<BreadcrumbGroup items={layout.breadcrumbs} />}
       content={
         <ContentLayout
           header={
-            <Header variant="h1" info={<Link variant="info">Info</Link>}>
-              Page header
+            <Header variant="h1" description={layout.pageDescription}>
+              {layout.pageHeader}
             </Header>
           }
         >
