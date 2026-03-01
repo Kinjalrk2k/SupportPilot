@@ -2,6 +2,7 @@ from models.base import Base
 
 from models.enums.order import OrderStatus, PaymentStatus
 from models.enums.ticket import TicketCategory, TicketPriority, TicketStatus
+from models.enums.message import MessageRole
 
 from models.mixins.timestamp_mixin import TimestampMixin
 
