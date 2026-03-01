@@ -16,7 +16,8 @@ from datetime import datetime, timezone
 
 router = APIRouter()
 
-#TODO: move this to redis
+
+# TODO: move this to redis
 class MessagesConnectionManager:
     active_connections = dict[UUID, list[WebSocket]]
 
