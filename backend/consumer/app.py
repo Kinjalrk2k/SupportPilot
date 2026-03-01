@@ -10,6 +10,8 @@ from .handlers import (
     handle_chat_messages_events,
     handle_ticket_categorization_events,
 )
+from config.db import SessionLocal
+import traceback
 
 
 def start_consumer():
@@ -34,17 +36,21 @@ def start_consumer():
 
             try:
                 payload = json.loads(raw_value)
-                if topic_name == TOPIC_CATEGORIZATION:
-                    handle_ticket_categorization_events(payload)
+                with SessionLocal() as db:
+                    if topic_name == TOPIC_CATEGORIZATION:
+                        handle_ticket_categorization_events(payload, db)
 
-                elif topic_name == TOPIC_MESSAGES:
-                    handle_chat_messages_events(payload)
+                    elif topic_name == TOPIC_MESSAGES:
+                        handle_chat_messages_events(payload, db)
 
-                else:
-                    print(f"Received message from unknown topic: {topic_name}")
+                    else:
+                        print(f"Received message from unknown topic: {topic_name}")
 
             except json.JSONDecodeError:
                 print(f"Failed to parse JSON from topic {topic_name}: {raw_value}")
+
+            except Exception as e:
+                traceback.print_exc()
 
     except KeyboardInterrupt:
         print("Shutting down consumer gracefully")

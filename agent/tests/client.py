@@ -8,7 +8,7 @@ def chat_with_agent():
 
     # The payload matching your new schema
     payload = {
-        "thread_id": "session-user-04",
+        "thread_id": "3dfb6450-15c4-4a1e-9b1a-741e44a1abfb",
         "order_id": "84bf516d-0768-4961-84f6-c4a25828f44f",
         "messages": [{"role": "user", "content": "Where is my order?"}],
     }

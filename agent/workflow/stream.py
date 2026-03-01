@@ -82,6 +82,7 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
             elif kind == "on_chain_end" and node_name == "analyze_issue":
                 state = event["data"].get("output", {})
                 state["order_id"] = order_id
+                state["thread_id"] = thread_id
 
                 # produce categorizations
                 publish_to_kafka(

@@ -91,6 +91,22 @@ services:
       - "6006:6006" # The Phoenix UI and HTTP collector
       - "4317:4317" # The OpenTelemetry gRPC collector
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: support_pilot_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: password
+    ports:
+      - "5050:80"
+    volumes:
+      - ./pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - support_pilot_network
+
 volumes:
   postgres_data:
 

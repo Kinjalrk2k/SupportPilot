@@ -7,6 +7,7 @@ from models.mixins.timestamp_mixin import TimestampMixin
 
 from models.order import Order
 from models.ticket import Ticket
+from models.message import Message
 
 from models.functions.updated_at import trigger_set_updated_at
 

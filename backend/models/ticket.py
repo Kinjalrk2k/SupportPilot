@@ -35,3 +35,6 @@ class Ticket(Base, TimestampMixin):
 
     # back populates
     order: Mapped["Order"] = relationship("Order", back_populates="tickets")
+
+    # back populates
+    messages: Mapped[list["Message"]] = relationship("Message", back_populates="thread")
