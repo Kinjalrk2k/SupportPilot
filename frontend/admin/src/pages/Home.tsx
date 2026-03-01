@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { setPageLayout } from "../app/layoutSlice";
+import { setPageLayout } from "../app/redux/layoutSlice";
 
 function HomePage() {
   const dispatch = useDispatch();
@@ -8,8 +8,6 @@ function HomePage() {
     dispatch(
       setPageLayout({
         breadcrumbs: [{ text: "Home", href: "/" }],
-        pageHeader: "Home",
-        pageDescription: "Entry point to manage various SupportPilot internals",
       }),
     );
   }, [dispatch]);

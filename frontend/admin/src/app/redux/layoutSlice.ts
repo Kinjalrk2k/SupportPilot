@@ -7,14 +7,14 @@ interface BreadcrumbItem {
 
 interface LayoutState {
   breadcrumbs: BreadcrumbItem[];
-  pageHeader?: string;
-  pageDescription?: string;
+  // pageHeader?: string;
+  // pageDescription?: string;
 }
 
 const initialState: LayoutState = {
   breadcrumbs: [],
-  pageHeader: undefined,
-  pageDescription: undefined,
+  // pageHeader: undefined,
+  // pageDescription: undefined,
 };
 
 const layoutSlice = createSlice({
@@ -23,13 +23,13 @@ const layoutSlice = createSlice({
   reducers: {
     setPageLayout: (state, action: PayloadAction<LayoutState>) => {
       state.breadcrumbs = action.payload.breadcrumbs;
-      state.pageHeader = action.payload.pageHeader;
-      state.pageDescription = action.payload.pageDescription;
+      // state.pageHeader = action.payload.pageHeader;
+      // state.pageDescription = action.payload.pageDescription;
     },
     clearPageLayout: (state) => {
       state.breadcrumbs = [];
-      state.pageHeader = undefined;
-      state.pageDescription = undefined;
+      // state.pageHeader = undefined;
+      // state.pageDescription = undefined;
     },
   },
 });
