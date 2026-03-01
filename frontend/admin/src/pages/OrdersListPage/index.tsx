@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import {
   Alert,
-  Badge,
   Box,
   Button,
   ContentLayout,
@@ -10,23 +9,15 @@ import {
   Link,
   Pagination,
   SpaceBetween,
-  StatusIndicator,
   Table,
 } from "@cloudscape-design/components";
 import moment from "moment";
 import { setPageLayout } from "../../app/redux/layoutSlice";
-import {
-  getOrders,
-  type IOrder,
-  type IOrdersResponse,
-} from "../../app/api/orders";
+import { getOrders, type IOrder } from "../../app/api/orders";
 import { useQuery } from "@tanstack/react-query";
-import {
-  orderStatusTexts,
-  orderStatusTypes,
-  paymentStatusTexts,
-  paymentStatusTypes,
-} from "./constants";
+import OrderStatus from "../../components/OrderStatus";
+import PaymentStatus from "../../components/PaymentStatus";
+import Time from "../../components/Time";
 
 function OrdersListPage() {
   const dispatch = useDispatch();
@@ -73,29 +64,17 @@ function OrdersListPage() {
     {
       id: "order_status",
       header: "Order Status",
-      cell: (item: IOrder) => (
-        <StatusIndicator type={orderStatusTypes[item.order_status]}>
-          {orderStatusTexts[item.order_status]}
-        </StatusIndicator>
-      ),
+      cell: (item: IOrder) => <OrderStatus status={item.order_status} />,
     },
     {
       id: "payment_status",
       header: "Payment Status",
-      cell: (item: IOrder) => (
-        <StatusIndicator type={paymentStatusTypes[item.payment_status]}>
-          {paymentStatusTexts[item.payment_status]}
-        </StatusIndicator>
-      ),
+      cell: (item: IOrder) => <PaymentStatus status={item.payment_status} />,
     },
     {
       id: "created_at",
       header: "Created At",
-      cell: (item: IOrder) => (
-        <time title={moment(item.created_at).format("MMMM Do YYYY, h:mm:ss a")}>
-          {moment(item.created_at).fromNow()}
-        </time>
-      ),
+      cell: (item: IOrder) => <Time timestamp={item.created_at} />,
     },
   ];
 

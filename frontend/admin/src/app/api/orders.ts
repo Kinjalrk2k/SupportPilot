@@ -49,3 +49,8 @@ export const getOrders = async (
   });
   return response.data;
 };
+
+export const getOrder = async (orderId: string): Promise<IOrder> => {
+  const response = await instance.get(`/orders/${orderId}`);
+  return response.data;
+};
