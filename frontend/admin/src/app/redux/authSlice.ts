@@ -6,8 +6,18 @@ interface AuthState {
   role: Role;
 }
 
+const getInitialRole = (): Role => {
+  if (typeof window !== "undefined") {
+    const savedRole = localStorage.getItem("supportpilot_role");
+    if (savedRole === "admin" || savedRole === "user") {
+      return savedRole;
+    }
+  }
+  return "admin"; // Default to admin for now
+};
+
 const initialState: AuthState = {
-  role: "admin", // Default to admin for now
+  role: getInitialRole(),
 };
 
 const authSlice = createSlice({
@@ -16,6 +26,9 @@ const authSlice = createSlice({
   reducers: {
     setRole: (state, action: PayloadAction<Role>) => {
       state.role = action.payload;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("supportpilot_role", action.payload);
+      }
     },
   },
 });
