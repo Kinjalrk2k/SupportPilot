@@ -15,6 +15,7 @@ import {
   Spinner,
   Table,
   TextContent,
+  Link,
 } from "@cloudscape-design/components";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
@@ -207,6 +208,7 @@ function OrderDetailsPage() {
           { text: orderId!, href: `/orders/${orderId}` },
         ],
         activeHref: "/orders",
+        helpPanelTopic: "order_details",
       }),
     );
   }, [dispatch, orderId]);
@@ -223,7 +225,7 @@ function OrderDetailsPage() {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       navigate("/orders");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error("Failed to delete order", error);
     },
   });
@@ -236,7 +238,7 @@ function OrderDetailsPage() {
         priority: "low",
         status: "ai_handling",
       }),
-    onSuccess: (data: any) => {
+    onSuccess: (data: { id: string }) => {
       dispatch(
         addFlash({
           type: "success",
@@ -247,7 +249,7 @@ function OrderDetailsPage() {
       );
       navigate(`/chat/${data.id}`);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error("Failed to create ticket", error);
       dispatch(
         addFlash({
@@ -265,6 +267,8 @@ function OrderDetailsPage() {
   const pageHeader = (
     <Header
       variant="h1"
+      description="View comprehensive details about this order, including items, subtotal, and actions you can take."
+      info={<Link variant="info" onFollow={() => dispatch({ type: 'layout/setToolsOpen', payload: true })}>Info</Link>}
       actions={
         <SpaceBetween direction="horizontal" size="xs">
           <Button onClick={() => navigate(`/orders/${orderId}/update`)}>

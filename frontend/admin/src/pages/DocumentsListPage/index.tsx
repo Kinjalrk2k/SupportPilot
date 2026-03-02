@@ -10,6 +10,7 @@ import {
   SpaceBetween,
   Table,
   Modal,
+  Link,
 } from "@cloudscape-design/components";
 import { setPageLayout } from "../../app/redux/layoutSlice";
 import { getDocuments, deleteDocument } from "../../app/api/documents";
@@ -55,11 +56,13 @@ function DeleteDocumentModal({
 }
 
 function DocumentsListHeader({ total }: { total?: number }) {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   return (
     <Header
       variant="awsui-h1-sticky"
       description="Manage all knowledge documents"
+      info={<Link variant="info" onFollow={() => dispatch({ type: 'layout/setToolsOpen', payload: true })}>Info</Link>}
       counter={`(${total !== undefined ? total : "..."})`}
       actions={
         <SpaceBetween direction="horizontal" size="xs">
@@ -87,6 +90,7 @@ function DocumentsListPage() {
           { text: "Documents", href: "/documents" },
         ],
         activeHref: "/documents",
+        helpPanelTopic: "documents",
       })
     );
   }, [dispatch]);

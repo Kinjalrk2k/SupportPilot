@@ -7,7 +7,6 @@ import {
   ContentLayout,
   Header,
   SpaceBetween,
-  Icon,
   Link,
   TextContent,
 } from "@cloudscape-design/components";

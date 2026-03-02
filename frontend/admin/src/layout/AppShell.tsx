@@ -35,7 +35,7 @@ function AppShell(props: AppShellProps) {
   return (
     <AppLayoutToolbar
       navigationOpen={navigationOpen}
-      onNavigationChange={(e: any) => setNavigationOpen(e.detail.open)}
+      onNavigationChange={(e: { detail: { open: boolean } }) => setNavigationOpen(e.detail.open)}
       navigation={
         <div
           style={{ display: "flex", flexDirection: "column", height: "100%" }}
@@ -91,7 +91,7 @@ function AppShell(props: AppShellProps) {
         />
       }
       toolsOpen={toolsOpen}
-      onToolsChange={(e: any) => dispatch(setToolsOpen(e.detail.open))}
+      onToolsChange={(e: { detail: { open: boolean } }) => dispatch(setToolsOpen(e.detail.open))}
       tools={
         <HelpPanel
           header={
@@ -100,9 +100,17 @@ function AppShell(props: AppShellProps) {
                 ? "Orders Help"
                 : helpPanelTopic === "tickets"
                   ? "Tickets Help"
-                  : helpPanelTopic === "home"
-                    ? "Dashboard Help"
-                    : "Help"}
+                  : helpPanelTopic === "documents"
+                    ? "Documents Help"
+                    : helpPanelTopic === "order_details"
+                      ? "Order Details Help"
+                      : helpPanelTopic === "ticket_details"
+                        ? "Ticket Details Help"
+                        : helpPanelTopic === "chat"
+                          ? "Chat Help"
+                          : helpPanelTopic === "home"
+                            ? "Dashboard Help"
+                            : "Help"}
             </h2>
           }
         >
@@ -124,6 +132,30 @@ function AppShell(props: AppShellProps) {
               The SupportPilot Dashboard provides a high-level overview of your 
               business operations. Monitor total revenue, order statuses, and
                customer support ticket metrics at a glance.
+            </p>
+          )}
+          {helpPanelTopic === "documents" && (
+            <p>
+              Use the Documents page to upload and manage the knowledge base for SupportPilot's 
+              generative AI. Ensure documents are clear, concise, and up-to-date.
+            </p>
+          )}
+          {helpPanelTopic === "order_details" && (
+            <p>
+              This page displays comprehensive details about a specific order, including the 
+              customer's information, items purchased, and current fulfillment status.
+            </p>
+          )}
+          {helpPanelTopic === "ticket_details" && (
+            <p>
+              This page shows the history and current status of a customer support ticket. 
+              You can review the conversation, change priority/category, or delete it if needed.
+            </p>
+          )}
+          {helpPanelTopic === "chat" && (
+            <p>
+              Welcome to the real-time Chat interface. You can observe the AI assistant handling 
+              the conversation or manually intervene if the ticket is escalated.
             </p>
           )}
           {helpPanelTopic === "default" && (

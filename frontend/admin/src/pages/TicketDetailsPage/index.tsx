@@ -166,6 +166,7 @@ export default function TicketDetailsPage() {
           { text: ticketId || "Details", href: `/tickets/${ticketId}` },
         ],
         activeHref: "/tickets",
+        helpPanelTopic: "ticket_details",
       }),
     );
   }, [dispatch, ticketId]);
@@ -213,6 +214,8 @@ export default function TicketDetailsPage() {
   const pageHeader = (
     <Header
       variant="h1"
+      description="View full details of the customer support ticket, including status, category, and timestamps."
+      info={<Link variant="info" onFollow={() => dispatch({ type: 'layout/setToolsOpen', payload: true })}>Info</Link>}
       actions={
         <SpaceBetween direction="horizontal" size="xs">
           {role === "admin" && (

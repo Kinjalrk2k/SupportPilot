@@ -76,6 +76,7 @@ export default function TicketUpdatePage() {
 
   useEffect(() => {
     if (ticket) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setValues({
         category: ticket.category || null,
         priority: ticket.priority || null,
@@ -162,7 +163,7 @@ export default function TicketUpdatePage() {
                   onChange={({ detail }) =>
                     setValues((prev) => ({
                       ...prev,
-                      category: detail.selectedOption.value as any,
+                      category: detail.selectedOption.value as ITicketUpdate["category"],
                     }))
                   }
                   options={CATEGORY_OPTIONS}
@@ -179,7 +180,7 @@ export default function TicketUpdatePage() {
                   onChange={({ detail }) =>
                     setValues((prev) => ({
                       ...prev,
-                      priority: detail.selectedOption.value as any,
+                      priority: detail.selectedOption.value as ITicketUpdate["priority"],
                     }))
                   }
                   options={PRIORITY_OPTIONS}
@@ -195,7 +196,7 @@ export default function TicketUpdatePage() {
                   onChange={({ detail }) =>
                     setValues((prev) => ({
                       ...prev,
-                      status: detail.selectedOption.value as any,
+                      status: detail.selectedOption.value as ITicketUpdate["status"],
                     }))
                   }
                   options={STATUS_OPTIONS}
