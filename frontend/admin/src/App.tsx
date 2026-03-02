@@ -7,7 +7,8 @@ import OrdersListPage from "./pages/OrdersListPage";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./app/api/tanstack";
 import OrderDetailsPage from "./pages/OrderDetailsPage";
-
+import OrderCreatePage from "./pages/OrderCreatePage";
+import OrderUpdatePage from "./pages/OrderUpdatePage";
 function App() {
   return (
     <Provider store={store}>
@@ -17,7 +18,12 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/orders" element={<OrdersListPage />} />
+              <Route path="/orders/create" element={<OrderCreatePage />} />
               <Route path="/orders/:orderId" element={<OrderDetailsPage />} />
+              <Route
+                path="/orders/:orderId/update"
+                element={<OrderUpdatePage />}
+              />
             </Routes>
           </AppShell>
         </BrowserRouter>

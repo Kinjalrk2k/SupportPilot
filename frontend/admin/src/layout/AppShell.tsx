@@ -24,7 +24,9 @@ function AppShell(props: AppShellProps) {
 
   const [toolsOpen, setToolsOpen] = useState<boolean>(false);
   const [navigationOpen, setNavigationOpen] = useState<boolean>(true);
-  const { breadcrumbs } = useSelector((state: RootState) => state.layout);
+  const { breadcrumbs, activeHref } = useSelector(
+    (state: RootState) => state.layout,
+  );
   const flashbarItems = useSelector((state: RootState) => state.flashbar.items);
   const dispatch = useDispatch();
 
@@ -44,13 +46,14 @@ function AppShell(props: AppShellProps) {
           <SideNavigation
             header={{
               href: "/",
-              text: "SupportPilot Admin Dashboard",
+              text: "SupportPilot Admin",
             }}
             items={[
               { type: "link", text: `Orders`, href: `/orders` },
               { type: "link", text: `Tickets`, href: `/tickets` },
               { type: "link", text: `Documents`, href: `/documents` },
             ]}
+            activeHref={activeHref}
           />
         }
         notifications={
