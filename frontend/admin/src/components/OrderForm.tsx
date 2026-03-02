@@ -12,7 +12,11 @@ import {
   SpaceBetween,
   Textarea,
 } from "@cloudscape-design/components";
-import type { IOrderCreate } from "../app/api/orders";
+import type {
+  IOrderCreate,
+  OrderStatusType,
+  PaymentStatusType,
+} from "../app/api/orders";
 
 interface OrderFormProps {
   initialValues?: Partial<IOrderCreate>;
@@ -56,15 +60,18 @@ export default function OrderForm({
     payment_status: initialValues?.payment_status || "unpaid",
   });
 
-  const handleChange = (field: keyof IOrderCreate, value: any) => {
+  const handleChange = <K extends keyof IOrderCreate>(
+    field: K,
+    value: IOrderCreate[K],
+  ) => {
     setValues((prev) => ({ ...prev, [field]: value }));
   };
 
-  const calculateTotal = (items: any[]) => {
+  const calculateTotal = (items: IOrderCreate["items"]) => {
     return items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
   };
 
-  const handleItemsChange = (items: any[]) => {
+  const handleItemsChange = (items: IOrderCreate["items"]) => {
     const newItems = [...items];
     handleChange("items", newItems);
     handleChange("total_amount", calculateTotal(newItems));
@@ -216,7 +223,10 @@ export default function OrderForm({
                       ) || null
                     }
                     onChange={({ detail }) =>
-                      handleChange("order_status", detail.selectedOption.value)
+                      handleChange(
+                        "order_status",
+                        detail.selectedOption.value as unknown as OrderStatusType
+                      )
                     }
                     options={ORDER_STATUS_OPTIONS}
                   />
@@ -232,7 +242,7 @@ export default function OrderForm({
                     onChange={({ detail }) =>
                       handleChange(
                         "payment_status",
-                        detail.selectedOption.value,
+                        detail.selectedOption.value as unknown as PaymentStatusType,
                       )
                     }
                     options={PAYMENT_STATUS_OPTIONS}

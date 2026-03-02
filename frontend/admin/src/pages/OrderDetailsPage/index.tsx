@@ -17,6 +17,8 @@ import {
   TextContent,
 } from "@cloudscape-design/components";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../app/redux/store";
 import {
   getOrder,
   deleteOrder,
@@ -192,6 +194,7 @@ function OrderDetailsPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const role = useSelector((state: RootState) => state.auth.role);
 
   useEffect(() => {
     dispatch(
@@ -233,7 +236,9 @@ function OrderDetailsPage() {
           <Button onClick={() => navigate(`/orders/${orderId}/update`)}>
             Edit
           </Button>
-          <Button onClick={() => setDeleteModalVisible(true)}>Delete</Button>
+          {role === "admin" && (
+            <Button onClick={() => setDeleteModalVisible(true)}>Delete</Button>
+          )}
           <Button variant="primary">Create Ticket</Button>
         </SpaceBetween>
       }

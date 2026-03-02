@@ -9,6 +9,10 @@ import { queryClient } from "./app/api/tanstack";
 import OrderDetailsPage from "./pages/OrderDetailsPage";
 import OrderCreatePage from "./pages/OrderCreatePage";
 import OrderUpdatePage from "./pages/OrderUpdatePage";
+import DocumentsListPage from "./pages/DocumentsListPage";
+import DocumentCreatePage from "./pages/DocumentCreatePage";
+import DocumentUpdatePage from "./pages/DocumentUpdatePage";
+import ProtectedRoute from "./components/ProtectedRoute";
 function App() {
   return (
     <Provider store={store}>
@@ -24,6 +28,11 @@ function App() {
                 path="/orders/:orderId/update"
                 element={<OrderUpdatePage />}
               />
+              <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+                <Route path="/documents" element={<DocumentsListPage />} />
+                <Route path="/documents/create" element={<DocumentCreatePage />} />
+                <Route path="/documents/:filename/update" element={<DocumentUpdatePage />} />
+              </Route>
             </Routes>
           </AppShell>
         </BrowserRouter>

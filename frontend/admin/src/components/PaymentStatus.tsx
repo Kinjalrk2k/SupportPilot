@@ -2,7 +2,7 @@ import { StatusIndicator } from "@cloudscape-design/components";
 import type { StatusIndicatorType } from "../common/types";
 import type { PaymentStatusType } from "../app/api/orders";
 
-export const paymentStatusTypes: Record<
+const paymentStatusTypes: Record<
   PaymentStatusType,
   StatusIndicatorType
 > = {
@@ -11,7 +11,7 @@ export const paymentStatusTypes: Record<
   refunded: "warning",
 };
 
-export const paymentStatusTexts: Record<PaymentStatusType, string> = {
+const paymentStatusTexts: Record<PaymentStatusType, string> = {
   paid: "Paid",
   unpaid: "Unpaid",
   refunded: "Refunded",

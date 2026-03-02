@@ -2,7 +2,7 @@ import { StatusIndicator } from "@cloudscape-design/components";
 import type { StatusIndicatorType } from "../common/types";
 import type { OrderStatusType } from "../app/api/orders";
 
-export const orderStatusTypes: Record<OrderStatusType, StatusIndicatorType> = {
+const orderStatusTypes: Record<OrderStatusType, StatusIndicatorType> = {
   pending: "pending",
   preparing: "in-progress",
   out_for_delivery: "info",
@@ -10,7 +10,7 @@ export const orderStatusTypes: Record<OrderStatusType, StatusIndicatorType> = {
   cancelled: "stopped",
 };
 
-export const orderStatusTexts: Record<OrderStatusType, string> = {
+const orderStatusTexts: Record<OrderStatusType, string> = {
   pending: "Pending",
   preparing: "Preparing",
   out_for_delivery: "Out for Delivery",
