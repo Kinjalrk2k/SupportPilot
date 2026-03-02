@@ -1,0 +1,97 @@
+# Cloudscape Design System - Documentation for LLMs
+
+> Cloudscape Design System is an open source design system for the cloud. Cloudscape offers user interface guidelines, front-end components, design resources, and development tools for building intuitive, engaging, and inclusive user experiences at scale.
+
+## Get Started
+
+- [Get Started Guide](https://cloudscape.design/get-started/index.html.md): Learn about the system and how to start building with Cloudscape
+  - [Start Designing](https://cloudscape.design/get-started/for-designers/start-designing/index.html.md): Design resources, Figma libraries, and design guidelines
+  - [Start Developing](https://cloudscape.design/get-started/for-developers/start-developing/index.html.md): Installation instructions, React component documentation, and tutorials
+
+## Components
+
+### Complete Library
+
+- [All Components Guidelines](https://cloudscape.design/components/index.html.md): Component library documentation
+- [All Components API](https://cloudscape.design/components/index.html.json): Complete API reference for all components in a JSON
+
+### All Components by Name
+
+Each component has TWO documentation URLs:
+- **Guidelines**: `https://cloudscape.design/components/{component-name}/index.html.md`
+- **API References**: `https://cloudscape.design/components/{component-name}/index.html.json`
+
+Component names (replace {component-name} in URLs above)
+
+alert, anchor-navigation, annotation-context, app-layout, app-layout-toolbar, area-chart, attribute-editor, autosuggest, avatar, badge, bar-chart, board, board-item, box, breadcrumb-group, button, button-dropdown, button-group, calendar, cards, cartesian-chart, chat-bubble, checkbox, code-editor, code-view, collection-preferences, column-layout, container, content-layout, copy-to-clipboard, date-input, date-picker, date-range-picker, drawer, error-boundary, expandable-section, file-dropzone, file-input, file-token-group, file-upload, flashbar, form, form-field, grid, header, help-panel, hotspot, icon, input, items-palette, key-value-pairs, line-chart, link, list, live-region, loading-bar, mixed-line-bar-chart, modal, multiselect, pagination, panel-layout, pie-chart, pie-chart-legacy, popover, progress-bar, prompt-input, property-filter, radio-group, s3-resource-selector, segmented-control, select, side-navigation, slider, space-between, spinner, split-panel, status-indicator, steps, support-prompt-group, table, tabs, tag-editor, text-content, text-filter, textarea, tiles, time-input, toggle, toggle-button, token, token-group, top-navigation, tree-view, tutorial-panel, wizard
+
+Total: 95
+
+## Patterns
+  
+- [All Patterns](https://cloudscape.design/patterns/index.html.md): Patterns index of reusable combinations of components that solve common user interface problems]
+
+## Demos
+
+[All Demos](https://cloudscape.design/demos/index.html.md): Layout templates using components with interactive examples and source code
+
+## Foundations
+
+[Foundation Page](https://cloudscape.design/foundation/index.html.md): Visual foundation including colors, typography, iconography, spacing, layout, and motion guidelines
+
+## Optional
+
+- [GitHub Repository](https://github.com/cloudscape-design/components): Open source React components and contribution guidelines
+- [About](https://cloudscape.design/about/index.html.md): Project background and team information
+- [Versions](https://cloudscape.design/versions/index.html.md): Release notes and version history
+- [What's New](https://cloudscape.design/whats-new/index.html.md): Latest updates and new features
+
+Generated: 2026-02-27T17:15:01.063Z# Cloudscape Design System - Documentation for LLMs
+
+> Cloudscape Design System is an open source design system for the cloud. Cloudscape offers user interface guidelines, front-end components, design resources, and development tools for building intuitive, engaging, and inclusive user experiences at scale.
+
+## Get Started
+
+- [Get Started Guide](https://cloudscape.design/get-started/index.html.md): Learn about the system and how to start building with Cloudscape
+  - [Start Designing](https://cloudscape.design/get-started/for-designers/start-designing/index.html.md): Design resources, Figma libraries, and design guidelines
+  - [Start Developing](https://cloudscape.design/get-started/for-developers/start-developing/index.html.md): Installation instructions, React component documentation, and tutorials
+
+## Components
+
+### Complete Library
+
+- [All Components Guidelines](https://cloudscape.design/components/index.html.md): Component library documentation
+- [All Components API](https://cloudscape.design/components/index.html.json): Complete API reference for all components in a JSON
+
+### All Components by Name
+
+Each component has TWO documentation URLs:
+- **Guidelines**: `https://cloudscape.design/components/{component-name}/index.html.md`
+- **API References**: `https://cloudscape.design/components/{component-name}/index.html.json`
+
+Component names (replace {component-name} in URLs above)
+
+alert, anchor-navigation, annotation-context, app-layout, app-layout-toolbar, area-chart, attribute-editor, autosuggest, avatar, badge, bar-chart, board, board-item, box, breadcrumb-group, button, button-dropdown, button-group, calendar, cards, cartesian-chart, chat-bubble, checkbox, code-editor, code-view, collection-preferences, column-layout, container, content-layout, copy-to-clipboard, date-input, date-picker, date-range-picker, drawer, error-boundary, expandable-section, file-dropzone, file-input, file-token-group, file-upload, flashbar, form, form-field, grid, header, help-panel, hotspot, icon, input, items-palette, key-value-pairs, line-chart, link, list, live-region, loading-bar, mixed-line-bar-chart, modal, multiselect, pagination, panel-layout, pie-chart, pie-chart-legacy, popover, progress-bar, prompt-input, property-filter, radio-group, s3-resource-selector, segmented-control, select, side-navigation, slider, space-between, spinner, split-panel, status-indicator, steps, support-prompt-group, table, tabs, tag-editor, text-content, text-filter, textarea, tiles, time-input, toggle, toggle-button, token, token-group, top-navigation, tree-view, tutorial-panel, wizard
+
+Total: 95
+
+## Patterns
+  
+- [All Patterns](https://cloudscape.design/patterns/index.html.md): Patterns index of reusable combinations of components that solve common user interface problems]
+
+## Demos
+
+[All Demos](https://cloudscape.design/demos/index.html.md): Layout templates using components with interactive examples and source code
+
+## Foundations
+
+[Foundation Page](https://cloudscape.design/foundation/index.html.md): Visual foundation including colors, typography, iconography, spacing, layout, and motion guidelines
+
+## Optional
+
+- [GitHub Repository](https://github.com/cloudscape-design/components): Open source React components and contribution guidelines
+- [About](https://cloudscape.design/about/index.html.md): Project background and team information
+- [Versions](https://cloudscape.design/versions/index.html.md): Release notes and version history
+- [What's New](https://cloudscape.design/whats-new/index.html.md): Latest updates and new features
+
+Generated: 2026-02-27T17:15:01.063Z

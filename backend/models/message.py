@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, DateTime
 from models.base import Base
 from models.mixins.timestamp_mixin import TimestampMixin
 import uuid
@@ -25,6 +25,8 @@ class Message(Base, TimestampMixin):
     )
 
     content: Mapped[str] = mapped_column(String(), nullable=False)
+
+    sent_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     # back populates
     thread: Mapped["Ticket"] = relationship("Ticket", back_populates="messages")

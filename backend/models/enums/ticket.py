@@ -17,6 +17,6 @@ class TicketPriority(enum.Enum):
 
 class TicketStatus(enum.Enum):
     ai_handling = "ai_handling"
-    escaled_to_human = "escaled_to_human"
+    escalated_to_human = "escalated_to_human"
     human_handling = "human_handling"
     closed = "closed"

@@ -14,7 +14,11 @@ import {
 } from "@cloudscape-design/components";
 import { setPageLayout } from "../../app/redux/layoutSlice";
 import { addFlash } from "../../app/redux/flashbarSlice";
-import { getTicket, updateTicket, type ITicketUpdate } from "../../app/api/tickets";
+import {
+  getTicket,
+  updateTicket,
+  type ITicketUpdate,
+} from "../../app/api/tickets";
 
 const CATEGORY_OPTIONS = [
   { label: "Billing", value: "billing" },
@@ -32,7 +36,7 @@ const PRIORITY_OPTIONS = [
 
 const STATUS_OPTIONS = [
   { label: "AI Handling", value: "ai_handling" },
-  { label: "Escalated to Human", value: "escaled_to_human" },
+  { label: "Escalated to Human", value: "escalated_to_human" },
   { label: "Human Handling", value: "human_handling" },
   { label: "Closed", value: "closed" },
 ];

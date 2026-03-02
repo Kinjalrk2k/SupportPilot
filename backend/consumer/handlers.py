@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from models.all import Ticket, Message
+from datetime import datetime, timezone
 
 
 # ticket_categorization_event
@@ -24,7 +25,7 @@ def handle_ticket_categorization_events(payload: dict, db: Session):
     ticket.category = payload["category"].lower()
     ticket.priority = payload["priority"].lower()
     ticket.status = (
-        "escaled_to_human" if payload["requires_escalation"] else "ai_handling"
+        "escalated_to_human" if payload["requires_escalation"] else "ai_handling"
     )
 
     db.commit()
@@ -35,16 +36,21 @@ def handle_ticket_categorization_events(payload: dict, db: Session):
 #   'thread_id': 'session-user-04',
 #   'role': 'user' | 'assistant',
 #   'content': 'hello',
-#   'timestamp': '2026-02-28T22:46:43.790313+00:00'
+#   'sent_at': '2026-02-28T22:46:43.790313+00:00'
 # }
 def handle_chat_messages_events(payload: dict, db: Session):
     print("[chat_messages_events]", payload)
+
+    try:
+        sent_at = datetime.fromisoformat(payload["sent_at"].replace("Z", "+00:00"))
+    except Exception:
+        sent_at = datetime.now(timezone.utc)
 
     message = Message(
         thread_id=payload["thread_id"],
         role=payload["role"],
         content=payload["content"],
-        created_at=payload["timestamp"],
+        sent_at=sent_at,
     )
 
     db.add(message)

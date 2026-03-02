@@ -26,7 +26,7 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
                 "thread_id": thread_id,
                 "role": "user",
                 "content": user_input,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "sent_at": datetime.now(timezone.utc).isoformat(),
             },
         )
 
@@ -71,10 +71,12 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
                 node_output = event["data"].get("output", {})
                 if "messages" in node_output and node_output["messages"]:
                     content = node_output["messages"][-1].content
+                    full_ai_response += content
                     chunk = {
                         "id": chunk_id,
                         "object": "chat.completion.chunk",
                         "choices": [{"delta": {"content": content}}],
+                        "is_escalated": True
                     }
                     yield f"data: {json.dumps(chunk)}\n\n"
 
@@ -97,7 +99,7 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
                 "thread_id": thread_id,
                 "role": "assistant",
                 "content": full_ai_response,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "sent_at": datetime.now(timezone.utc).isoformat(),
             },
         )
 

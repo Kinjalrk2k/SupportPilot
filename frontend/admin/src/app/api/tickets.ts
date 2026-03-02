@@ -4,7 +4,7 @@ export type TicketCategoryType = "billing" | "technical" | "login" | "general";
 export type TicketPriorityType = "low" | "medium" | "high" | "urgent";
 export type TicketStatusType =
   | "ai_handling"
-  | "escaled_to_human"
+  | "escalated_to_human"
   | "human_handling"
   | "closed";
 
@@ -45,7 +45,7 @@ export interface IMessageResponse {
   id: string;
   role: MessageRole;
   content: string;
-  created_at: string;
+  sent_at: string;
 }
 
 export const getTickets = async (
@@ -55,6 +55,13 @@ export const getTickets = async (
   const response = await instance.get(
     `/tickets/?page=${page}&page_size=${pageSize}`,
   );
+  return response.data;
+};
+
+export const createTicket = async (
+  ticket: ITicketCreate,
+): Promise<ITicketResponse> => {
+  const response = await instance.post(`/tickets/`, ticket);
   return response.data;
 };
 

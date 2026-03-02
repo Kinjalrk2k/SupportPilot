@@ -10,7 +10,7 @@ export default function TicketStatus(props: { status: TicketStatusType }) {
         </Box>
       );
 
-    case "escaled_to_human":
+    case "escalated_to_human":
       return (
         <Box color="text-status-error">
           <Icon name="flag" /> Escalated

@@ -16,6 +16,8 @@ import DocumentsListPage from "./pages/DocumentsListPage";
 import TicketsListPage from "./pages/TicketsListPage";
 import TicketDetailsPage from "./pages/TicketDetailsPage";
 import TicketUpdatePage from "./pages/TicketUpdatePage";
+import ChatPage from "./pages/ChatPage";
+
 function App() {
   return (
     <Provider store={store}>
@@ -37,6 +39,7 @@ function App() {
                 path="/tickets/:ticketId/update"
                 element={<TicketUpdatePage />}
               />
+              <Route path="/chat/:ticketId" element={<ChatPage />} />
               <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
                 <Route path="/documents" element={<DocumentsListPage />} />
                 <Route path="/documents/create" element={<DocumentCreatePage />} />

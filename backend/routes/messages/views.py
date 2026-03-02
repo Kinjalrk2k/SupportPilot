@@ -13,6 +13,7 @@ from uuid import UUID
 from .schemas import MessageResponse
 import traceback
 from datetime import datetime, timezone
+from uuid import uuid4
 
 router = APIRouter()
 
@@ -37,9 +38,20 @@ class MessagesConnectionManager:
                 del self.active_connections[thread_id]
 
     async def broadcast_to_thread(self, payload: str, thread_id: UUID):
-        if thread_id in self.active_connections:
-            for connection in self.active_connections[thread_id]:
+        if thread_id not in self.active_connections:
+            return
+
+        dead_connections = []
+
+        for connection in self.active_connections[thread_id]:
+            try:
                 await connection.send_json(payload)
+            except Exception:
+                dead_connections.append(connection)
+
+        # Remove dead connections
+        for connection in dead_connections:
+            self.disconnect(connection, thread_id)
 
 
 manager = MessagesConnectionManager()
@@ -60,19 +72,32 @@ async def chat_endpoint(
             "type": "system",
             "role": None,
             "content": f"{role.value} joined the thread",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "id": str(uuid4()),
         },
         thread_id,
     )
 
     try:
         while True:
-            data = await websocket.receive_text()
+            data = await websocket.receive_json()
+
+            content = data.get("content")
+            timestamp = data.get("sent_at")
+
+            if not content or not timestamp:
+                continue  # or raise error
+
+            try:
+                sent_at = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+            except Exception:
+                sent_at = datetime.now(timezone.utc)
 
             message = Message(
                 thread_id=thread_id,
                 role=role.value,
-                content=data,
+                content=content,
+                sent_at=sent_at,
             )
             db.add(message)
             db.commit()
@@ -81,8 +106,9 @@ async def chat_endpoint(
                 {
                     "type": "chat",
                     "role": role.value,
-                    "content": data,
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "content": content,
+                    "send_at": sent_at.isoformat(),
+                    "id": str(uuid4()),
                 },
                 thread_id,
             )
@@ -93,7 +119,8 @@ async def chat_endpoint(
                 "type": "system",
                 "role": None,
                 "content": f"{role.value} left the thread",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "id": str(uuid4()),
             },
             thread_id,
         )
@@ -106,6 +133,7 @@ async def chat_endpoint(
                 "role": None,
                 "content": f"{role.value} left the thread",
                 "timestamp": datetime.now(timezone.utc).isoformat(),
+                "id": str(uuid4()),
             },
             thread_id,
         )
@@ -121,7 +149,7 @@ def get_ticket(thread_id: UUID, db: SessionDep):
     messages = (
         db.query(Message)
         .filter(Message.thread_id == thread_id)
-        .order_by(Message.created_at.asc())
+        .order_by(Message.sent_at.asc())
         .all()
     )
 

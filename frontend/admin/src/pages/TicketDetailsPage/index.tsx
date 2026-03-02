@@ -68,14 +68,19 @@ function DeleteTicketModal({
           this action.
         </TextContent>
         <Alert>
-          Proceeding with this action will delete the ticket and all its messages.
+          Proceeding with this action will delete the ticket and all its
+          messages.
         </Alert>
       </SpaceBetween>
     </Modal>
   );
 }
 
-function TicketSummaryPanel({ ticket }: { ticket: ITicketResponse | undefined }) {
+function TicketSummaryPanel({
+  ticket,
+}: {
+  ticket: ITicketResponse | undefined;
+}) {
   return (
     <Container header={<Header variant="h2">Ticket Details</Header>}>
       <KeyValuePairs
@@ -106,11 +111,19 @@ function TicketSummaryPanel({ ticket }: { ticket: ITicketResponse | undefined })
               },
               {
                 label: "Category",
-                value: ticket ? <TicketCategory category={ticket.category} /> : "-",
+                value: ticket ? (
+                  <TicketCategory category={ticket.category} />
+                ) : (
+                  "-"
+                ),
               },
               {
                 label: "Priority",
-                value: ticket ? <TicketPriority status={ticket.priority} /> : "-",
+                value: ticket ? (
+                  <TicketPriority status={ticket.priority} />
+                ) : (
+                  "-"
+                ),
               },
             ],
           },
@@ -212,6 +225,9 @@ export default function TicketDetailsPage() {
               </Button>
             </SpaceBetween>
           )}
+          <Button variant="primary" href={`/chat/${ticketId}`}>
+            Chat
+          </Button>
         </SpaceBetween>
       }
     >

@@ -25,6 +25,8 @@ import {
   type IOrder,
   type IOrderItem,
 } from "../../app/api/orders";
+import { createTicket } from "../../app/api/tickets";
+import { addFlash } from "../../app/redux/flashbarSlice";
 import OrderStatus from "../../components/OrderStatus";
 import PaymentStatus from "../../components/PaymentStatus";
 import Time from "../../components/Time";
@@ -221,9 +223,41 @@ function OrderDetailsPage() {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       navigate("/orders");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Failed to delete order", error);
     },
+  });
+
+  const createTicketMutation = useMutation({
+    mutationFn: () =>
+      createTicket({
+        order_id: orderId!,
+        category: "general",
+        priority: "low",
+        status: "ai_handling",
+      }),
+    onSuccess: (data: any) => {
+      dispatch(
+        addFlash({
+          type: "success",
+          header: "Ticket created",
+          content: "Successfully created ticket.",
+          dismissible: true,
+        }),
+      );
+      navigate(`/chat/${data.id}`);
+    },
+    onError: (error: any) => {
+      console.error("Failed to create ticket", error);
+      dispatch(
+        addFlash({
+          type: "error",
+          header: "Failed to create ticket",
+          content: "An error occurred while creating the ticket.",
+          dismissible: true,
+        })
+      );
+    }
   });
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -239,7 +273,7 @@ function OrderDetailsPage() {
           {role === "admin" && (
             <Button onClick={() => setDeleteModalVisible(true)}>Delete</Button>
           )}
-          <Button variant="primary">Create Ticket</Button>
+          <Button variant="primary" loading={createTicketMutation.isPending} onClick={() => createTicketMutation.mutate()}>Create Ticket</Button>
         </SpaceBetween>
       }
     >

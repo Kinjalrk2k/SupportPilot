@@ -7,11 +7,21 @@ from pydantic import BaseModel
 from schemas import ChatRequest
 from workflow.stream import stream_agent_response
 from workflow.history import get_agent_history
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 PORT = os.getenv("PORT")
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
 
 
 @app.post("/v1/chat/stream")
