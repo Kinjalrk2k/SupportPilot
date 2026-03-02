@@ -1,6 +1,11 @@
 import instance from "./instance";
 
-export type TicketCategoryType = "billing" | "technical" | "login" | "general";
+export type TicketCategoryType =
+  | "billing"
+  | "technical"
+  | "login"
+  | "general"
+  | "delivery";
 export type TicketPriorityType = "low" | "medium" | "high" | "urgent";
 export type TicketStatusType =
   | "ai_handling"
@@ -37,6 +42,13 @@ export interface IPaginatedTicketResponse {
   page: number;
   page_size: number;
   total_pages: number;
+}
+
+export interface ITicketStatsResponse {
+  total_tickets: number;
+  status_counts: Record<TicketStatusType, number>;
+  category_counts: Record<TicketCategoryType, number>;
+  priority_counts: Record<TicketPriorityType, number>;
 }
 
 export type MessageRole = "user" | "assistant" | "human";
@@ -86,5 +98,10 @@ export const getTicketMessages = async (
   threadId: string,
 ): Promise<IMessageResponse[]> => {
   const response = await instance.get(`/messages/${threadId}`);
+  return response.data;
+};
+
+export const getTicketStats = async (): Promise<ITicketStatsResponse> => {
+  const response = await instance.get("/stats/tickets");
   return response.data;
 };

@@ -1,7 +1,9 @@
 import { Box, Icon } from "@cloudscape-design/components";
 import type { TicketCategoryType } from "../app/api/tickets";
 
-export default function TicketCategory(props: { category?: TicketCategoryType | null }) {
+export default function TicketCategory(props: {
+  category?: TicketCategoryType | null;
+}) {
   switch (props.category) {
     case "billing":
       return (
@@ -25,6 +27,13 @@ export default function TicketCategory(props: { category?: TicketCategoryType | 
       );
 
     case "technical":
+      return (
+        <Box>
+          <Icon name="ticket" /> Technical
+        </Box>
+      );
+
+    case "delivery":
       return (
         <Box>
           <Icon name="ticket" /> Technical

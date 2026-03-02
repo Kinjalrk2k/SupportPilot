@@ -59,10 +59,13 @@ const COLUMNS = [
 ];
 
 function TicketsListHeader({ total }: { total?: number }) {
+  const dispatch = useDispatch();
+
   return (
     <Header
       variant="awsui-h1-sticky"
-      description="Manage all tickets"
+      description="Monitor and resolve customer support inquiries. Respond directly or escalate unresolved AI tickets to human agents."
+      info={<Link variant="info" onFollow={() => dispatch({ type: 'layout/setToolsOpen', payload: true })}>Info</Link>}
       counter={`(${total || "0"})`}
     >
       Tickets
@@ -103,6 +106,7 @@ export default function TicketsListPage() {
           { text: "Tickets", href: "/tickets" },
         ],
         activeHref: "/tickets",
+        helpPanelTopic: "tickets",
       }),
     );
   }, [dispatch]);

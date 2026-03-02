@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes.orders.views import router as orders_router
 from fastapi.staticfiles import StaticFiles
 from config.openapi import custom_openapi
 from dotenv import load_dotenv
@@ -8,9 +7,11 @@ import os
 import uvicorn
 
 from routes.docs.views import router as docs_router
+from routes.orders.views import router as orders_router
 from routes.documents.views import router as documents_router
 from routes.tickets.views import router as tickets_router
 from routes.messages.views import router as messages_router
+from routes.stats.views import router as stats_router
 
 load_dotenv()
 PORT = os.getenv("PORT")
@@ -33,6 +34,7 @@ app.include_router(orders_router, prefix="/orders", tags=["orders"])
 app.include_router(documents_router, prefix="/documents", tags=["documents"])
 app.include_router(tickets_router, prefix="/tickets", tags=["tickets"])
 app.include_router(messages_router, prefix="/messages", tags=["messages"])
+app.include_router(stats_router, prefix="/stats", tags=["stats"])
 
 app.openapi = custom_openapi(app)
 

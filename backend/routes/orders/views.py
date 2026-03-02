@@ -30,7 +30,7 @@ def get_orders(
 ):
     total = db.query(Order).count()
     offset = (page - 1) * page_size
-    orders = db.query(Order).offset(offset).limit(page_size).all()
+    orders = db.query(Order).order_by(Order.created_at.desc()).offset(offset).limit(page_size).all()
     total_pages = ceil(total / page_size) if total else 1
 
     return {

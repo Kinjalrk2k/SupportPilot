@@ -27,7 +27,7 @@ def get_tickets(
 ):
     total = db.query(Ticket).count()
     offset = (page - 1) * page_size
-    tickets = db.query(Ticket).offset(offset).limit(page_size).all()
+    tickets = db.query(Ticket).order_by(Ticket.created_at.desc()).offset(offset).limit(page_size).all()
     total_pages = ceil(total / page_size) if total else 1
 
     return {

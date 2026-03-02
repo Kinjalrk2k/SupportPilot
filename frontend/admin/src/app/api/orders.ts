@@ -40,6 +40,13 @@ export interface IOrdersResponse {
   total_pages: number;
 }
 
+export interface IOrderStatsResponse {
+  total_orders: number;
+  total_revenue: number;
+  order_status_counts: Record<OrderStatusType, number>;
+  payment_status_counts: Record<PaymentStatusType, number>;
+}
+
 export const getOrders = async (
   page = 1,
   pageSize = 10,
@@ -73,4 +80,9 @@ export const updateOrder = async (
 
 export const deleteOrder = async (orderId: string): Promise<void> => {
   await instance.delete(`/orders/${orderId}`);
+};
+
+export const getOrderStats = async (): Promise<IOrderStatsResponse> => {
+  const response = await instance.get(`/stats/orders`);
+  return response.data;
 };

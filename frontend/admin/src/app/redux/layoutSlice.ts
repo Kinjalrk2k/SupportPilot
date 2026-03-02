@@ -8,36 +8,43 @@ interface BreadcrumbItem {
 interface LayoutState {
   breadcrumbs: BreadcrumbItem[];
   activeHref: string;
-  // pageHeader?: string;
-  // pageDescription?: string;
+  toolsOpen: boolean;
+  helpPanelTopic: string;
 }
 
 const initialState: LayoutState = {
   breadcrumbs: [],
   activeHref: "",
-  // pageHeader: undefined,
-  // pageDescription: undefined,
+  toolsOpen: false,
+  helpPanelTopic: "default",
 };
 
 const layoutSlice = createSlice({
   name: "layout",
   initialState,
   reducers: {
-    setPageLayout: (state, action: PayloadAction<LayoutState>) => {
-      state.breadcrumbs = action.payload.breadcrumbs;
-      state.activeHref = action.payload.activeHref;
-      // state.pageHeader = action.payload.pageHeader;
-      // state.pageDescription = action.payload.pageDescription;
+    setPageLayout: (state, action: PayloadAction<Partial<LayoutState>>) => {
+      if (action.payload.breadcrumbs !== undefined) {
+        state.breadcrumbs = action.payload.breadcrumbs;
+      }
+      if (action.payload.activeHref !== undefined) {
+        state.activeHref = action.payload.activeHref;
+      }
+      if (action.payload.helpPanelTopic !== undefined) {
+        state.helpPanelTopic = action.payload.helpPanelTopic;
+      }
     },
     clearPageLayout: (state) => {
       state.breadcrumbs = [];
       state.activeHref = "";
-      // state.pageHeader = undefined;
-      // state.pageDescription = undefined;
+      state.helpPanelTopic = "default";
+    },
+    setToolsOpen: (state, action: PayloadAction<boolean>) => {
+      state.toolsOpen = action.payload;
     },
   },
 });
 
-export const { setPageLayout, clearPageLayout } = layoutSlice.actions;
+export const { setPageLayout, clearPageLayout, setToolsOpen } = layoutSlice.actions;
 
 export default layoutSlice.reducer;

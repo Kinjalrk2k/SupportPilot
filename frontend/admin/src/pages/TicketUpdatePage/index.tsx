@@ -25,6 +25,7 @@ const CATEGORY_OPTIONS = [
   { label: "Technical", value: "technical" },
   { label: "Login", value: "login" },
   { label: "General", value: "general" },
+  { label: "Delivery", value: "delivery" },
 ];
 
 const PRIORITY_OPTIONS = [

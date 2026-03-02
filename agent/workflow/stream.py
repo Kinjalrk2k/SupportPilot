@@ -34,10 +34,7 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
         config = {
             "configurable": {"thread_id": thread_id},
             # for tracing
-            "metadata": {
-                "session_id": thread_id,
-                "order_id": order_id
-            },
+            "metadata": {"session_id": thread_id, "order_id": order_id},
         }
         chunk_id = f"chatcmpl-{int(time.time())}"
 
@@ -76,7 +73,7 @@ async def stream_agent_response(user_input: str, thread_id: str, order_id: str):
                         "id": chunk_id,
                         "object": "chat.completion.chunk",
                         "choices": [{"delta": {"content": content}}],
-                        "is_escalated": True
+                        "is_escalated": True,
                     }
                     yield f"data: {json.dumps(chunk)}\n\n"
 

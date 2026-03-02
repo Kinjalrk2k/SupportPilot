@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../app/redux/store";
 import { removeFlash } from "../app/redux/flashbarSlice";
 import { setRole } from "../app/redux/authSlice";
+import { setToolsOpen } from "../app/redux/layoutSlice";
 
 export interface AppShellProps {
   children: JSX.Element;
@@ -23,9 +24,8 @@ export interface AppShellProps {
 function AppShell(props: AppShellProps) {
   const { children } = props;
 
-  const [toolsOpen, setToolsOpen] = useState<boolean>(false);
   const [navigationOpen, setNavigationOpen] = useState<boolean>(true);
-  const { breadcrumbs, activeHref } = useSelector(
+  const { breadcrumbs, activeHref, toolsOpen, helpPanelTopic } = useSelector(
     (state: RootState) => state.layout,
   );
   const flashbarItems = useSelector((state: RootState) => state.flashbar.items);
@@ -91,8 +91,46 @@ function AppShell(props: AppShellProps) {
         />
       }
       toolsOpen={toolsOpen}
-      onToolsChange={(e: any) => setToolsOpen(e.detail.open)}
-      tools={<HelpPanel header={<h2>Overview</h2>}>Help content</HelpPanel>}
+      onToolsChange={(e: any) => dispatch(setToolsOpen(e.detail.open))}
+      tools={
+        <HelpPanel
+          header={
+            <h2>
+              {helpPanelTopic === "orders"
+                ? "Orders Help"
+                : helpPanelTopic === "tickets"
+                  ? "Tickets Help"
+                  : helpPanelTopic === "home"
+                    ? "Dashboard Help"
+                    : "Help"}
+            </h2>
+          }
+        >
+          {helpPanelTopic === "orders" && (
+            <p>
+              Use the Orders page to view all customer orders, their statuses, and
+              payment states. Click on an order ID to view detailed information or manage it.
+            </p>
+          )}
+          {helpPanelTopic === "tickets" && (
+            <p>
+              Use the Tickets page to monitor and resolve customer support inquiries.
+               You can view the conversation history and escalate tickets to human agents if
+              the AI cannot resolve the issue.
+            </p>
+          )}
+          {helpPanelTopic === "home" && (
+            <p>
+              The SupportPilot Dashboard provides a high-level overview of your 
+              business operations. Monitor total revenue, order statuses, and
+               customer support ticket metrics at a glance.
+            </p>
+          )}
+          {helpPanelTopic === "default" && (
+            <p>Welcome to SupportPilot. Navigate using the sidebar.</p>
+          )}
+        </HelpPanel>
+      }
       breadcrumbs={<BreadcrumbGroup items={breadcrumbs} />}
       content={children}
     />

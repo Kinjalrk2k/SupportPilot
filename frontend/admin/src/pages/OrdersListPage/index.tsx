@@ -59,10 +59,13 @@ const COLUMNS = [
 ];
 
 function OrdersListHeader({ total }: { total?: number }) {
+  const dispatch = useDispatch();
+
   return (
     <Header
       variant="awsui-h1-sticky"
-      description="Manage all orders"
+      description="View and manage customer orders. You can track their fulfillment status, payment status, and modify details if necessary."
+      info={<Link variant="info" onFollow={() => dispatch({ type: 'layout/setToolsOpen', payload: true })}>Info</Link>}
       counter={`(${total || "..."})`}
       actions={
         <SpaceBetween direction="horizontal" size="xs">
@@ -108,6 +111,7 @@ function OrdersListPage() {
           { text: "Orders", href: "/orders" },
         ],
         activeHref: "/orders",
+        helpPanelTopic: "orders",
       }),
     );
   }, [dispatch]);

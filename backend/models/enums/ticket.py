@@ -6,6 +6,7 @@ class TicketCategory(enum.Enum):
     technical = "technical"
     login = "login"
     general = "general"
+    delivery = "delivery"
 
 
 class TicketPriority(enum.Enum):
