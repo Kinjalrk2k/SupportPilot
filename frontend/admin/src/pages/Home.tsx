@@ -11,13 +11,14 @@ import {
   Grid,
   TextContent,
   Box,
-  PieChart,
   ColumnLayout,
 } from "@cloudscape-design/components";
 import { useQuery } from "@tanstack/react-query";
 import { getOrderStats } from "../app/api/orders";
 import { getTicketStats } from "../app/api/tickets";
 import type { RootState } from "../app/redux/store";
+import StatCard from "../components/StatCard";
+import DashboardChart from "../components/DashboardChart";
 
 function HomePage() {
   const dispatch = useDispatch();
@@ -178,145 +179,59 @@ function HomePage() {
           <Container header={<Header variant="h2">Dashboard Overview</Header>}>
             <SpaceBetween size="xl">
               <ColumnLayout columns={3} variant="text-grid">
-                <div>
-                  <SpaceBetween size="s" direction="vertical">
-                    <Box variant="awsui-key-label">Total Revenue</Box>
-                    <div style={{ fontSize: "40px", fontWeight: "bold" }}>
-                      ${stats?.total_revenue?.toLocaleString() ?? "0"}
-                    </div>
-                  </SpaceBetween>
-                </div>
-                <div>
-                  <SpaceBetween size="s" direction="vertical">
-                    <Box variant="awsui-key-label">Total Orders</Box>
-                    <div style={{ fontSize: "40px", fontWeight: "bold" }}>
-                      {stats?.total_orders?.toLocaleString() ?? "0"}
-                    </div>
-                  </SpaceBetween>
-                </div>
-                <div>
-                  <SpaceBetween size="s" direction="vertical">
-                    <Box variant="awsui-key-label">Total Tickets</Box>
-                    <div style={{ fontSize: "40px", fontWeight: "bold" }}>
-                      {ticketStats?.total_tickets?.toLocaleString() ?? "0"}
-                    </div>
-                  </SpaceBetween>
-                </div>
+                <StatCard
+                  title="Total Revenue"
+                  value={`$${stats?.total_revenue?.toLocaleString() ?? "0"}`}
+                />
+                <StatCard
+                  title="Total Orders"
+                  value={stats?.total_orders?.toLocaleString() ?? "0"}
+                />
+                <StatCard
+                  title="Total Tickets"
+                  value={ticketStats?.total_tickets?.toLocaleString() ?? "0"}
+                />
               </ColumnLayout>
 
               <ColumnLayout columns={2}>
-                <Container
-                  header={<Header variant="h3">Order Statuses</Header>}
-                >
-                  <PieChart
-                    hideFilter
-                    variant="donut"
-                    size="small"
-                    innerMetricValue={
-                      isLoading ? "..." : String(stats?.total_orders || 0)
-                    }
-                    innerMetricDescription="Orders"
-                    statusType={isLoading ? "loading" : "finished"}
-                    data={orderChartData}
-                    empty={
-                      <Box textAlign="center" color="inherit">
-                        <b>No data available</b>
-                      </Box>
-                    }
-                  />
-                </Container>
-
-                <Container
-                  header={<Header variant="h3">Payment Statuses</Header>}
-                >
-                  <PieChart
-                    hideFilter
-                    variant="donut"
-                    size="small"
-                    innerMetricValue={
-                      isLoading ? "..." : String(stats?.total_orders || 0)
-                    }
-                    innerMetricDescription="Orders"
-                    statusType={isLoading ? "loading" : "finished"}
-                    data={paymentChartData}
-                    empty={
-                      <Box textAlign="center" color="inherit">
-                        <b>No data available</b>
-                      </Box>
-                    }
-                  />
-                </Container>
+                <DashboardChart
+                  title="Order Statuses"
+                  data={orderChartData}
+                  isLoading={isLoading}
+                  totalText="Orders"
+                  totalValue={stats?.total_orders || 0}
+                />
+                <DashboardChart
+                  title="Payment Statuses"
+                  data={paymentChartData}
+                  isLoading={isLoading}
+                  totalText="Orders"
+                  totalValue={stats?.total_orders || 0}
+                />
               </ColumnLayout>
 
               <ColumnLayout columns={3}>
-                <Container
-                  header={<Header variant="h3">Ticket Statuses</Header>}
-                >
-                  <PieChart
-                    hideFilter
-                    variant="donut"
-                    size="small"
-                    innerMetricValue={
-                      isTicketStatsLoading
-                        ? "..."
-                        : String(ticketStats?.total_tickets || 0)
-                    }
-                    innerMetricDescription="Tickets"
-                    statusType={isTicketStatsLoading ? "loading" : "finished"}
-                    data={ticketStatusChartData}
-                    empty={
-                      <Box textAlign="center" color="inherit">
-                        <b>No data available</b>
-                      </Box>
-                    }
-                  />
-                </Container>
-
-                <Container
-                  header={<Header variant="h3">Ticket Categories</Header>}
-                >
-                  <PieChart
-                    hideFilter
-                    variant="donut"
-                    size="small"
-                    innerMetricValue={
-                      isTicketStatsLoading
-                        ? "..."
-                        : String(ticketStats?.total_tickets || 0)
-                    }
-                    innerMetricDescription="Tickets"
-                    statusType={isTicketStatsLoading ? "loading" : "finished"}
-                    data={ticketCategoryChartData}
-                    empty={
-                      <Box textAlign="center" color="inherit">
-                        <b>No data available</b>
-                      </Box>
-                    }
-                  />
-                </Container>
-
-                <Container
-                  header={<Header variant="h3">Ticket Priorities</Header>}
-                >
-                  <PieChart
-                    hideFilter
-                    variant="donut"
-                    size="small"
-                    innerMetricValue={
-                      isTicketStatsLoading
-                        ? "..."
-                        : String(ticketStats?.total_tickets || 0)
-                    }
-                    innerMetricDescription="Tickets"
-                    statusType={isTicketStatsLoading ? "loading" : "finished"}
-                    data={ticketPriorityChartData}
-                    empty={
-                      <Box textAlign="center" color="inherit">
-                        <b>No data available</b>
-                      </Box>
-                    }
-                  />
-                </Container>
+                <DashboardChart
+                  title="Ticket Statuses"
+                  data={ticketStatusChartData}
+                  isLoading={isTicketStatsLoading}
+                  totalText="Tickets"
+                  totalValue={ticketStats?.total_tickets || 0}
+                />
+                <DashboardChart
+                  title="Ticket Categories"
+                  data={ticketCategoryChartData}
+                  isLoading={isTicketStatsLoading}
+                  totalText="Tickets"
+                  totalValue={ticketStats?.total_tickets || 0}
+                />
+                <DashboardChart
+                  title="Ticket Priorities"
+                  data={ticketPriorityChartData}
+                  isLoading={isTicketStatsLoading}
+                  totalText="Tickets"
+                  totalValue={ticketStats?.total_tickets || 0}
+                />
               </ColumnLayout>
             </SpaceBetween>
           </Container>

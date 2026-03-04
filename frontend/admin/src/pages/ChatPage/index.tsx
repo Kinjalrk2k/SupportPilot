@@ -6,23 +6,16 @@ import {
   Container,
   ContentLayout,
   Header,
-  SpaceBetween,
   Link,
+  SpaceBetween,
   TextContent,
 } from "@cloudscape-design/components";
 import { setPageLayout } from "../../app/redux/layoutSlice";
-import ChatBubble from "@cloudscape-design/chat-components/chat-bubble";
 import PromptInput from "@cloudscape-design/components/prompt-input";
-import { Avatar } from "@cloudscape-design/chat-components";
 import { getTicketMessages, getTicket } from "../../app/api/tickets";
 import type { RootState } from "../../app/redux/store";
-
-interface ChatMessage {
-  id: string;
-  role: "user" | "assistant" | "human";
-  content: string;
-  timestamp: string;
-}
+import ChatMessageList, { type ChatMessage } from "./ChatMessageList";
+import { Avatar } from "@cloudscape-design/chat-components";
 
 export default function ChatPage() {
   const { ticketId } = useParams<{ ticketId: string }>();
@@ -51,12 +44,19 @@ export default function ChatPage() {
   useEffect(() => {
     if (initialMessages) {
       setMessages(
-        initialMessages.map((msg) => ({
-          id: msg.id,
-          role: msg.role,
-          content: msg.content,
-          timestamp: msg.sent_at,
-        })),
+        initialMessages.map(
+          (msg: {
+            id: string;
+            role: "user" | "assistant" | "human";
+            content: string;
+            sent_at: string;
+          }) => ({
+            id: msg.id,
+            role: msg.role,
+            content: msg.content,
+            timestamp: msg.sent_at,
+          }),
+        ),
       );
     }
   }, [initialMessages]);
@@ -68,7 +68,8 @@ export default function ChatPage() {
 
     // Determine the connection role
     const wsRole = role === "admin" ? "human" : "user";
-    const wsUrl = `ws://localhost:5001/messages/ws/${ticketId}/${wsRole}`;
+    const wsBase = import.meta.env.VITE_WS_BASE_URL || "ws://localhost:5001/";
+    const wsUrl = `${wsBase}messages/ws/${ticketId}/${wsRole}`;
 
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
@@ -119,7 +120,7 @@ export default function ChatPage() {
   }, [dispatch, ticketId]);
 
   useEffect(() => {
-    console.log({messages});
+    console.log({ messages });
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -135,7 +136,7 @@ export default function ChatPage() {
           JSON.stringify({
             content: userMessageContent,
             sent_at: new Date().toISOString(),
-          })
+          }),
         );
         setInputValue("");
       } else {
@@ -169,7 +170,9 @@ export default function ChatPage() {
     ]);
 
     try {
-      const response = await fetch("http://localhost:5002/v1/chat/stream", {
+      const aiBase =
+        import.meta.env.VITE_AI_STREAM_URL || "http://localhost:5002/";
+      const response = await fetch(`${aiBase}v1/chat/stream`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -200,11 +203,13 @@ export default function ChatPage() {
           if (line.startsWith("data: ") && line !== "data: [DONE]") {
             try {
               const data = JSON.parse(line.slice(6));
-              
+
               if (data.is_escalated) {
                 setIsEscalatedState(true);
                 // Invalidate ticket to fetch the new escalated status
-                queryClient.invalidateQueries({ queryKey: ["ticket", ticketId] });
+                queryClient.invalidateQueries({
+                  queryKey: ["ticket", ticketId],
+                });
               }
 
               const deltaContent = data.choices?.[0]?.delta?.content;
@@ -233,6 +238,30 @@ export default function ChatPage() {
 
   const isInputDisabled = role === "admin" && isAIHandling;
 
+  let sendingAvatar;
+
+  switch (role) {
+    case "admin":
+      sendingAvatar = (
+        <Avatar
+          ariaLabel="Human"
+          tooltipText="Human"
+          iconName="suggestions"
+          color="gen-ai"
+        />
+      );
+      break;
+
+    case "user":
+      sendingAvatar = (
+        <Avatar
+          ariaLabel="User"
+          tooltipText="User"
+          iconName="user-profile-active"
+        />
+      );
+  }
+
   return (
     <ContentLayout
       header={
@@ -254,86 +283,34 @@ export default function ChatPage() {
     >
       <Container
         footer={
-          <PromptInput
-            disabled={isInputDisabled}
-            value={inputValue}
-            onChange={({ detail }) => setInputValue(detail.value)}
-            onAction={handleSendMessage}
-            actionButtonIconName="send"
-            actionButtonAriaLabel="Send message"
-            placeholder={
-              isInputDisabled
-                ? "AI agent is handling..."
-                : "Type your message..."
-            }
-            maxRows={4}
-            minRows={1}
-            disableActionButton={isReceiving}
-          />
+          <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
+            {sendingAvatar}
+            <div style={{ flex: 1, marginLeft: "1rem" }}>
+              <PromptInput
+                disabled={isInputDisabled}
+                value={inputValue}
+                onChange={({ detail }) => setInputValue(detail.value)}
+                onAction={handleSendMessage}
+                actionButtonIconName="send"
+                actionButtonAriaLabel="Send message"
+                placeholder={
+                  isInputDisabled
+                    ? "AI agent is handling..."
+                    : "Type your message..."
+                }
+                maxRows={4}
+                minRows={1}
+                disableActionButton={isReceiving}
+              />
+            </div>
+          </div>
         }
       >
-        <div
-          style={{
-            height: "60vh",
-            overflowY: "auto",
-            padding: "1rem",
-            paddingBottom: "0",
-          }}
-        >
-          <SpaceBetween size="m">
-            {messages.map((msg) => {
-              // outgoing if the logged in user is the author
-              const isOutgoing =
-                msg.role === (role === "admin" ? "human" : "user");
-              const type = isOutgoing ? "outgoing" : "incoming";
-              let avatar;
-              console.log({msg});
-
-              switch (msg.role) {
-                case "assistant":
-                  avatar = (
-                    <Avatar
-                      color="gen-ai"
-                      iconName="gen-ai"
-                      ariaLabel="Assistant"
-                      tooltipText="Assistant"
-                    />
-                  );
-                  break;
-
-                case "human":
-                  avatar = (
-                    <Avatar
-                      ariaLabel="Human"
-                      tooltipText="Human"
-                      iconName="suggestions"
-                    />
-                  );
-                  break;
-
-                case "user":
-                  avatar = (
-                    <Avatar
-                      ariaLabel="User"
-                      tooltipText="User"
-                      iconName="user-profile-active"
-                    />
-                  );
-              }
-              return (
-                <ChatBubble
-                  key={msg.id}
-                  type={type}
-                  avatar={avatar}
-                  ariaLabel={`Message from ${msg.role}`}
-                >
-                  {msg.content}
-                </ChatBubble>
-              );
-            })}
-            <div ref={messagesEndRef} />
-          </SpaceBetween>
-        </div>
+        <ChatMessageList
+          messages={messages}
+          currentRole={role}
+          messagesEndRef={messagesEndRef}
+        />
       </Container>
     </ContentLayout>
   );

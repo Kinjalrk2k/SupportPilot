@@ -6,76 +6,15 @@ import {
   Box,
   Button,
   ContentLayout,
-  Header,
   SpaceBetween,
   Table,
-  Modal,
-  Link,
 } from "@cloudscape-design/components";
 import { setPageLayout } from "../../app/redux/layoutSlice";
 import { getDocuments, deleteDocument } from "../../app/api/documents";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-function DeleteDocumentModal({
-  visible,
-  onDismiss,
-  onConfirm,
-  isDeleting,
-  filename,
-}: {
-  visible: boolean;
-  onDismiss: () => void;
-  onConfirm: () => void;
-  isDeleting: boolean;
-  filename?: string;
-}) {
-  return (
-    <Modal
-      onDismiss={onDismiss}
-      visible={visible}
-      footer={
-        <Box float="right">
-          <SpaceBetween direction="horizontal" size="xs">
-            <Button variant="link" onClick={onDismiss} disabled={isDeleting}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={onConfirm} loading={isDeleting}>
-              Delete
-            </Button>
-          </SpaceBetween>
-        </Box>
-      }
-      header="Delete Document"
-    >
-      <Box>
-        Are you sure you want to permanently delete{" "}
-        <strong>{filename}</strong>? This action cannot be undone.
-      </Box>
-    </Modal>
-  );
-}
-
-function DocumentsListHeader({ total }: { total?: number }) {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  return (
-    <Header
-      variant="awsui-h1-sticky"
-      description="Manage all knowledge documents"
-      info={<Link variant="info" onFollow={() => dispatch({ type: 'layout/setToolsOpen', payload: true })}>Info</Link>}
-      counter={`(${total !== undefined ? total : "..."})`}
-      actions={
-        <SpaceBetween direction="horizontal" size="xs">
-          <Button variant="primary" onClick={() => navigate("/documents/create")}>
-            Upload Document
-          </Button>
-        </SpaceBetween>
-      }
-    >
-      Documents
-    </Header>
-  );
-}
+import DeleteDocumentModal from "./DeleteDocumentModal";
+import DocumentsListHeader from "./DocumentsListHeader";
 
 function DocumentsListPage() {
   const dispatch = useDispatch();
