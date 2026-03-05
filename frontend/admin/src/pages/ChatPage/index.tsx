@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
+  Button,
   Container,
   ContentLayout,
   Header,
@@ -12,9 +13,11 @@ import {
 } from "@cloudscape-design/components";
 import { setPageLayout } from "../../app/redux/layoutSlice";
 import PromptInput from "@cloudscape-design/components/prompt-input";
-import { getTicketMessages, getTicket } from "../../app/api/tickets";
+import { getTicketMessages, getTicket, updateTicket } from "../../app/api/tickets";
+import { addFlash } from "../../app/redux/flashbarSlice";
 import type { RootState } from "../../app/redux/store";
 import ChatMessageList, { type ChatMessage } from "./ChatMessageList";
+import CloseTicketModal from "./CloseTicketModal";
 import { Avatar } from "@cloudscape-design/chat-components";
 
 export default function ChatPage() {
@@ -24,6 +27,7 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState("");
   const [isReceiving, setIsReceiving] = useState(false);
   const [isEscalatedState, setIsEscalatedState] = useState(false);
+  const [closeModalVisible, setCloseModalVisible] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const role = useSelector((state: RootState) => state.auth.role);
   const wsRef = useRef<WebSocket | null>(null);
@@ -61,7 +65,34 @@ export default function ChatPage() {
     }
   }, [initialMessages]);
 
+  const isClosed = ticket?.status === "closed";
   const isAIHandling = ticket?.status === "ai_handling" && !isEscalatedState;
+
+  const closeTicketMutation = useMutation({
+    mutationFn: () => updateTicket(ticketId!, { status: "closed" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ticket", ticketId] });
+      setCloseModalVisible(false);
+      dispatch(
+        addFlash({
+          type: "success",
+          header: "Ticket closed",
+          content: "Successfully closed the ticket.",
+          dismissible: true,
+        }),
+      );
+    },
+    onError: () => {
+      dispatch(
+        addFlash({
+          type: "error",
+          header: "Failed to close ticket",
+          content: "An error occurred while closing the ticket.",
+          dismissible: true,
+        }),
+      );
+    },
+  });
 
   useEffect(() => {
     if (!ticketId || isAIHandling) return; // Don't connect if AI is handling
@@ -125,7 +156,7 @@ export default function ChatPage() {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || !ticketId || !ticket) return;
+    if (!inputValue.trim() || !ticketId || !ticket || isClosed) return;
 
     const userMessageContent = inputValue;
 
@@ -236,7 +267,7 @@ export default function ChatPage() {
     }
   };
 
-  const isInputDisabled = role === "admin" && isAIHandling;
+  const isInputDisabled = (role === "admin" && isAIHandling) || isClosed;
 
   let sendingAvatar;
 
@@ -276,11 +307,30 @@ export default function ChatPage() {
               </Link>
             </TextContent>
           }
+          actions={
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button
+                variant="primary"
+                onClick={() => setCloseModalVisible(true)}
+                disabled={isClosed}
+              >
+                Close Ticket
+              </Button>
+            </SpaceBetween>
+          }
         >
           Chat Support
         </Header>
       }
     >
+      <CloseTicketModal
+        visible={closeModalVisible}
+        onDismiss={() => setCloseModalVisible(false)}
+        onConfirm={() => closeTicketMutation.mutate()}
+        isClosing={closeTicketMutation.isPending}
+        ticketId={ticketId}
+      />
+      
       <Container
         footer={
           <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
@@ -289,12 +339,14 @@ export default function ChatPage() {
               <PromptInput
                 disabled={isInputDisabled}
                 value={inputValue}
-                onChange={({ detail }) => setInputValue(detail.value)}
+                onChange={(e) => setInputValue(e.detail.value)}
                 onAction={handleSendMessage}
                 actionButtonIconName="send"
                 actionButtonAriaLabel="Send message"
                 placeholder={
-                  isInputDisabled
+                  isClosed
+                    ? "Chat is disabled for closed tickets"
+                    : isInputDisabled
                     ? "AI agent is handling..."
                     : "Type your message..."
                 }

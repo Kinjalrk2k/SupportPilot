@@ -7,7 +7,7 @@ from fastapi import (
     WebSocketDisconnect,
 )
 from config.db import SessionDep
-from models.all import Message, Ticket, MessageRole
+from models.all import Message, Ticket, MessageRole, TicketStatus
 from math import ceil
 from uuid import UUID
 from .schemas import MessageResponse
@@ -65,6 +65,11 @@ async def chat_endpoint(
     if not ticket:
         await websocket.close(code=1008, reason="Invalid topic")
         return
+
+    if role == MessageRole.human:
+        setattr(ticket, "status", TicketStatus.human_handling)
+        db.commit()
+        db.refresh(ticket)
 
     await manager.connect(websocket, thread_id)
     await manager.broadcast_to_thread(

@@ -1,7 +1,6 @@
 import { SpaceBetween, TextContent } from "@cloudscape-design/components";
 import ChatBubble from "@cloudscape-design/chat-components/chat-bubble";
 import { Avatar } from "@cloudscape-design/chat-components";
-import Time from "../../components/Time";
 
 export interface ChatMessage {
   id: string;
