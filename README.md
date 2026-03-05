@@ -4,6 +4,11 @@ SupportPilot is an AI-powered support platform designed to streamline customer s
 
 The platform integrates ticket management, order tracking, and AI-driven assistance to help support teams quickly diagnose problems, respond to customers, and maintain a high level of service quality.
 
+## Demo
+
+Click on the thumnail below to open on YouTube
+[![](https://img.youtube.com/vi/sxqn_8Hy95A/0.jpg)](https://www.youtube.com/watch?v=sxqn_8Hy95A)
+
 ## Features
 
 - **Order Management:** Create, view, and manage customer orders within the system, including order details and status.
