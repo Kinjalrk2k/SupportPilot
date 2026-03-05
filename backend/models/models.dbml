@@ -1,0 +1,85 @@
+Enum message_role_enum {
+  user
+  assistant
+  human
+}
+
+Enum order_status_enum {
+  pending
+  preparing
+  out_for_delivery
+  delivered
+  cancelled
+}
+
+Enum payment_status_enum {
+  unpaid
+  paid
+  refunded
+}
+
+Enum ticket_category_enum {
+  billing
+  technical
+  login
+  general
+  delivery
+}
+
+Enum ticket_priority_enum {
+  low
+  medium
+  high
+  urgent
+}
+
+Enum ticket_status_enum {
+  ai_handling
+  escalated_to_human
+  human_handling
+  closed
+}
+
+Table order {
+  id uuid [pk]
+  customer_name varchar(100) [not null]
+  customer_phone varchar(20) [not null]
+
+  delivery_address varchar(255) [not null]
+  delivery_notes varchar(255)
+
+  items json [not null]
+  total_amount float [not null]
+
+  order_status order_status_enum [not null]
+  payment_status payment_status_enum [not null]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table ticket {
+  id uuid [pk]
+
+  order_id uuid [not null, ref: > order.id]
+
+  category ticket_category_enum
+  priority ticket_priority_enum
+  status ticket_status_enum [not null]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table message {
+  id uuid [pk]
+
+  thread_id uuid [not null, ref: > ticket.id]
+
+  role message_role_enum [not null]
+  content text [not null]
+  sent_at timestamp [not null]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}

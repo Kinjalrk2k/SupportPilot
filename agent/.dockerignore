@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.git
+.gitignore
+
+env/
+hf_cache/
+
+migrations/__pycache__/
+.langgraph_api/
+
+*.log
