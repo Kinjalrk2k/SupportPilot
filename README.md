@@ -8,7 +8,7 @@ The platform integrates ticket management, order tracking, and AI-driven assista
 
 Click on the thumnail below to open on YouTube
 
-[![](https://img.youtube.com/vi/sxqn_8Hy95A/0.jpg)](https://www.youtube.com/watch?v=sxqn_8Hy95A)
+[![](https://img.youtube.com/vi/sxqn_8Hy95A/maxresdefault.jpg)](https://www.youtube.com/watch?v=sxqn_8Hy95A)
 
 ## Features
 
