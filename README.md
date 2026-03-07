@@ -43,6 +43,8 @@ python3 -m venv env
 source env/bin/activate
 pip install -r requirements.txt
 
+# create .env based on .env.example
+
 # run
 python3 app.py
 ```
@@ -56,6 +58,8 @@ cd backend
 python3 -m venv env
 source env/bin/activate
 pip install -r requirements.txt
+
+# create .env based on .env.example
 
 # run
 python3 app.py
